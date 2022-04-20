@@ -90,15 +90,20 @@ class PLP extends Component {
                                 <div key={key} className={item.inStock ? 'items__container' : 'items__container--outOfStock'}>
                                     <div className={item.inStock ? 'items' : ''} style={{position: 'relative '}}>
                                         <img className={item.inStock ? '' : 'outOfStock__img'} src={item.gallery[0]} alt={item.id}/>
-                                        {
-                                            !item.attributes.length
-                                                ?   <Link to=''>
-                                                        <div className='buyBtn' onClick={() => addToCart(item.id)}>
-                                                            <img src={buyBtn} alt='buyBtn' />
-                                                        </div>
-                                                    </Link>
-                                                : ''
-                                        }
+                                            {
+                                                item.attributes.length 
+                                                    ?   <Link to={`/${item.id}`}>
+                                                            <div className='buyBtn' onClick={() => alert('Please, select product options!')}>
+                                                                <img src={buyBtn} alt='buyBtn' />
+                                                            </div>
+                                                        </Link>
+                                                    
+                                                    :   <Link to=''>
+                                                            <div className='buyBtn' onClick={() => addToCart(item.id)}>
+                                                                <img src={buyBtn} alt='buyBtn' />
+                                                            </div>
+                                                        </Link>
+                                            }
                                         <div className={item.inStock ? 'inStock' : 'outOfStock__text'}>
                                             <p>OUT OF STOCK</p>
                                         </div>

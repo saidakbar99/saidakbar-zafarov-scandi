@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {gql} from '@apollo/client'
 import { connect } from 'react-redux'
+import { Parser } from 'html-to-react'
 
 import { addToCart, attributeSelector } from '../redux/Cart/cart-action'
 
@@ -11,7 +12,6 @@ class PDP extends Component {
 
         this.state = {
             details: [],
-            toggleAttr: 0,
         }
     }
 
@@ -67,9 +67,10 @@ class PDP extends Component {
         for (let item in this.state.details.attributes){
             attributes.push(this.state.details.attributes[item])
         }
-        // console.log(attributes)
-        
-
+        const IdAttr = this.props.attributes[0]?.attributes.map(attr =>{
+            return Object.values(attr)[0]
+        }) 
+        const itemID = this.state.details.id + "," + IdAttr
         return(
             <div className='item__description--container'>
                 <div className='item__gallery'>
@@ -85,23 +86,31 @@ class PDP extends Component {
                 <div className='item__attributes'>
                     <h2>{this.state.details.brand}</h2>
                     <h3>{this.state.details.name}</h3>
-                    {attributes.map((item,key) => {
+                    {attributes.map((item,key1) => {
                         return(
-                            <div key={key}>
+                            <div key={key1}>
                                 <span>{item.name.toUpperCase()}:</span>
                                 <br/>
-                                    {item.items.map((btn,key) => {
+                                    {item.items.map((btn,key2) => {
+                                        let attrs = []
+                                        this.props.attributes[0]?.attributes?.map(item => {
+                                            attrs.push(Object.values(item)[0])
+                                        })
                                         return(
-                                            <div className='form_radio_btn'>
-                                                <input
+                                                <button
+                                                    key={key2}
                                                     type='radio'
-                                                    onClick={() => {attributeSelector(this.state.details.id, item.name, key)}}
+                                                    onClick={() => {attributeSelector(this.state.details.id, item.name, key2)}}
                                                     style={item.type === 'swatch' ? {background: `${btn.value}`} : {background: 'white'} }
-                                                    // className={this.state.toggleAttr === key ? "toggledAttr" : ""}
+                                                    className={`attr__btn ${
+                                                            attrs[key1] === key2 && this.state.details.inStock
+                                                                ? 'selected'
+                                                                : ''
+                                                    }`}
                                                     id={btn.id}
-                                                />
-                                                <label htmlFor={btn.id}>{item.type !== 'swatch' ? btn.value : ''}</label> 
-                                            </div>
+                                                >
+                                                    {item.type !== 'swatch' ? btn.value : ''}
+                                                </button>
                                         )
                                     })}
                             </div>  
@@ -111,20 +120,19 @@ class PDP extends Component {
                     <span style={{fontSize: '24px'}}>{prices[this.props.currency]?.currency?.symbol}{prices[this.props.currency]?.amount}</span>
                     <button 
                         onClick={this.state.details.inStock 
-                            ? (() => addToCart(this.state.details.id)) 
+                            ? (() => addToCart(this.state.details.id))
                             : () => alert} 
                         id={this.state.details.inStock 
                             ? 'add__btn' 
                             : 'add__btn--outOfStock'}
                     >{ this.state.details.inStock ? 'ADD TO CART' : 'OUT OF STOCK' }</button>
-                    
-                    <div dangerouslySetInnerHTML={{__html: this.state.details.description}}></div>
+                    <div>{Parser().parse(this.state.details.description)}</div>
                 </div>
             </div>
         )
     }
 }
-
+ 
 const mapStateToProps = state => {
     return{ 
         currency: state.cart.currency,
@@ -134,7 +142,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return{
-        addToCart: (attributes) => dispatch(addToCart(attributes)),
+        addToCart: (id) => dispatch(addToCart(id)),
         attributeSelector: (name,id,productID) => dispatch(attributeSelector(name,id,productID)),
     }
 }

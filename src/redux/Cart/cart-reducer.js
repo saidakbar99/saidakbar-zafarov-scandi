@@ -50,30 +50,45 @@ const cartReducer = (state = INITIAL_STATE, action) => {
   switch (action.type) {
     case actionTypes.ADD_TO_CART:
       const IdAttr = state.attributes[0]?.attributes.map(attr =>{
-        return Object.keys(attr)[0] +"="+ Object.values(attr)[0]
+        return Object.values(attr)[0]
       })  
       const item = state.allProducts.find(
         (prod) => prod.id === action.payload.id
       );
       const inCartItem = state.cart.find((item) =>
-        item.id == (action.payload.id+IdAttr) ? true : false
+        item.id == (action.payload.id+","+IdAttr) ? true : false
       );
-      console.log(inCartItem)
+      console.log(item)
       return {
         ...state,
         cart: inCartItem
           ? state.cart.map((item) =>
-              item.id == action.payload.id+IdAttr
+              item.id == action.payload.id+","+IdAttr
                 ? { ...item, qty: item.qty + 1 }
                 : item
             )
-          : [...state.cart, { ...item , qty: 1, selectedAttr: state.attributes[0], id: item.id + IdAttr}],
+          : [...state.cart, { ...item , qty: 1, selectedAttr: state.attributes[0], id: action.payload.id + "," + IdAttr}],
       };
     case actionTypes.REMOVE_FROM_CART:
       return {
         ...state,
         cart: state.cart.filter((item) => item.id !== action.payload.id),
       };
+    case actionTypes.ADD_ONE:
+      const IddAttr = state.attributes[0]?.attributes.map(attr =>{
+        return Object.values(attr)[0]
+      })
+      const sss = state.cart.find((item) =>
+        item.id == (action.payload.id) ? true : false
+      );
+      return {
+        ...state,
+        cart: state.cart.map((item) =>
+                item.id == action.payload.id
+                  ? { ...item, qty: item.qty + 1 }
+                  : item
+        )
+      }
     case actionTypes.SUB_ONE:
       return {
         ...state,

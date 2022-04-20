@@ -343,12 +343,12 @@ a{
     
 }
 .item__attributes button{
-    font-size: 16px;
-    width: 63px;
+    font-size: 18px;
+    font-weight: 600;
+    width: 74px;
     height: 45px;
     margin-bottom: 40px;
     margin-right: 12px;
-    border: 5px solid black;
 
 }
 #add__btn,
@@ -400,7 +400,6 @@ a{
     text-align: left;
 }
 .cart__border{
-    border-top: 1px solid #E5E5E5;
     padding: 20px 0;
     font-size: 30px;
 }
@@ -420,8 +419,6 @@ a{
 .cart__item--attributes--container{
     font-size: 18px;
     margin-top: 20px;
-}
-.cart__item--attributes{
     display: flex;
 }
 #attributes__btn{
@@ -430,35 +427,9 @@ a{
     height: 60px;
 }
 
-.form_radio_btn {
-	display: inline-block;
-	margin-right: 10px;
+.attr__btn{
+    border: 5px solid black;
 }
-.form_radio_btn input[type=radio] {
-	display: none;
-}
-.form_radio_btn label {
-	display: inline-block;
-	cursor: pointer;
-	padding: 0px 15px;
-	line-height: 34px;
-	border: 1px solid #999;
-	border-radius: 6px;
-	user-select: none;
-}
- 
-/* Checked */
-.form_radio_btn input[type=radio]:checked + label {
-	background: #ffe0a6;
-}
- 
-/* Hover */
-.form_radio_btn label:hover {
-	color: #666;
-}
- 
-/* Disabled */
-.form_radio_btn input[type=radio]:disabled + label {
-	background: #efefef;
-	color: #666;
+.selected {
+    border-color: red;
 }

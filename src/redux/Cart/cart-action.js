@@ -18,6 +18,15 @@ export const removeFromCart = (itemID) => {
     }
 }
 
+export const addOne = (itemID) => {
+    return{
+        type: actionTypes.ADD_ONE,
+        payload: {
+            id: itemID,
+        }
+    }
+}
+
 export const subOne = (itemID, value) => {
     return{
         type: actionTypes.SUB_ONE,

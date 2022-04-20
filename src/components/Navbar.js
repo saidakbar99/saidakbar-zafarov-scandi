@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import {gql} from '@apollo/client'
 import { connect } from 'react-redux'
 
-import { addToCart, removeFromCart, subOne, currencySelector } from '../redux/Cart/cart-action';
+import { addOne, removeFromCart, subOne, currencySelector } from '../redux/Cart/cart-action';
 
 import logo from '../assets/images/logo.svg'
 import cart from '../assets/images/cart.svg'
@@ -44,7 +44,7 @@ class Navbar extends Component {
     }
 
     render(){
-        const { addToCart } = this.props
+        const { addOne } = this.props
         const { removeFromCart } = this.props
         const { subOne } = this.props
         const { currencySelector } = this.props
@@ -113,15 +113,16 @@ class Navbar extends Component {
                                     <span>{item.name}</span>
                                     <span>{(item.prices[this.props.currency]?.amount*item.qty).toFixed(2)}{item.prices[this.props.currency]?.currency.symbol}</span>
                                     <div className='attributes__container'>
-                                        {item.selectedAttr.attributes.map((attr,key)=>{
-                                            console.log(attr)
+                                        {item?.selectedAttr?.attributes.map((attr,key)=>{
+                                          const attrID = item.id.split(",").slice(1)
+                                          console.log(attrID)
                                             return(
                                                 item.attributes.length
                                                     ?   <button
                                                             key={key}
-                                                            style={attr.type === 'swatch' ? {backgroundColor: `${item.attributes.attributes[key]?.items[Object.values(attr)[0]]?.value}`} : {background: 'white'} }
+                                                            style={attr.type === 'swatch' ? {backgroundColor: `${item.attributes[key]?.items[attrID[key]]?.value}`} : {background: 'white'} }
                                                         >
-                                                            {attr.type !== 'swatch' ? item.attributes[key]?.items[Object.values(attr)[0]]?.value : ''}
+                                                            {attr.type !== 'swatch' ? item.attributes[key]?.items[attrID[key]]?.value : ''}
                                                         </button>
                                                     :   ''
                                             )
@@ -130,7 +131,7 @@ class Navbar extends Component {
                                 </div>
                                 <div style={{display: 'flex'}}>
                                     <div className='cart__item--counter'>
-                                        <button onClick={() => addToCart(item.id)}>+</button>
+                                        <button onClick={() => addOne(item.id)}>+</button>
                                         <span>{item.qty}</span>
                                         <button onClick={() => subOne(item.id, item.qty)}>-</button>
                                         
@@ -150,7 +151,12 @@ class Navbar extends Component {
                   </div>
                   <div className="cart__btn--container">
                     <Link to='/cart'><button className="cart__btn--viewBag">VIEW BAG</button></Link>
-                    <button className="cart__btn--checkOut">CHECK OUT</button>
+                    <button className="cart__btn--checkOut" 
+                      onClick={() => {
+                        alert(`checked out ${totalSum.toFixed(2)}${this.props.cartProducts[0]?.prices[this.props.currency]?.currency.symbol}`);
+                        window.location.reload();
+                        }}
+                      >CHECK OUT</button>
                   </div>
                 </div>
               </div>
@@ -171,7 +177,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = (dispatch) => {
     return{
-        addToCart: (id) => dispatch(addToCart(id)),
+        addOne: (id) => dispatch(addOne(id)),
         removeFromCart: (id) => dispatch(removeFromCart(id)),
         subOne: (id,value) => dispatch(subOne(id,value)),
         currencySelector: (id) => dispatch(currencySelector(id))
