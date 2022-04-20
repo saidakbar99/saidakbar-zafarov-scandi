@@ -3,7 +3,7 @@ import {gql} from '@apollo/client'
 import { connect } from 'react-redux'
 import { Parser } from 'html-to-react'
 
-import { addToCart, attributeSelector } from '../redux/Cart/cart-action'
+import { addToCart, attributeSelector, attributeCleaner } from '../redux/Cart/cart-action'
 
 class PDP extends Component {
 
@@ -51,6 +51,7 @@ class PDP extends Component {
     render(){
         const { addToCart } = this.props
         const { attributeSelector } = this.props
+        const { attributeCleaner } = this.props
 
         const images = []
         for(let item in this.state.details.gallery){
@@ -67,10 +68,6 @@ class PDP extends Component {
         for (let item in this.state.details.attributes){
             attributes.push(this.state.details.attributes[item])
         }
-        const IdAttr = this.props.attributes[0]?.attributes.map(attr =>{
-            return Object.values(attr)[0]
-        }) 
-        const itemID = this.state.details.id + "," + IdAttr
         return(
             <div className='item__description--container'>
                 <div className='item__gallery'>
@@ -93,7 +90,7 @@ class PDP extends Component {
                                 <br/>
                                     {item.items.map((btn,key2) => {
                                         let attrs = []
-                                        this.props.attributes[0]?.attributes?.map(item => {
+                                        this.props.attributes[0]?.attributes?.forEach(item => {
                                             attrs.push(Object.values(item)[0])
                                         })
                                         return(
@@ -102,10 +99,11 @@ class PDP extends Component {
                                                     type='radio'
                                                     onClick={() => {attributeSelector(this.state.details.id, item.name, key2)}}
                                                     style={item.type === 'swatch' ? {background: `${btn.value}`} : {background: 'white'} }
-                                                    className={`attr__btn ${
-                                                            attrs[key1] === key2 && this.state.details.inStock
-                                                                ? 'selected'
-                                                                : ''
+                                                    className={`attr__btn 
+                                                                ${item.type !=="swatch" ? 'attr__btn--swatch' : ''} 
+                                                                ${attrs[key1] === key2 && this.state.details.inStock
+                                                                    ? 'selected'
+                                                                    : ''
                                                     }`}
                                                     id={btn.id}
                                                 >
@@ -120,7 +118,7 @@ class PDP extends Component {
                     <span style={{fontSize: '24px'}}>{prices[this.props.currency]?.currency?.symbol}{prices[this.props.currency]?.amount}</span>
                     <button 
                         onClick={this.state.details.inStock 
-                            ? (() => addToCart(this.state.details.id))
+                            ? (() =>addToCart(this.state.details.id) + alert("Item added") + attributeCleaner())
                             : () => alert} 
                         id={this.state.details.inStock 
                             ? 'add__btn' 
@@ -144,6 +142,7 @@ const mapDispatchToProps = dispatch => {
     return{
         addToCart: (id) => dispatch(addToCart(id)),
         attributeSelector: (name,id,productID) => dispatch(attributeSelector(name,id,productID)),
+        attributeCleaner: () => dispatch(attributeCleaner())
     }
 }
 

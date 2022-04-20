@@ -21,7 +21,6 @@ class Cart extends Component {
                                     <div className='cart__item--attributes--container'>
                                     {item?.selectedAttr?.attributes.map((attr,key)=>{
                                           const attrID = item.id.split(",").slice(1)
-                                          console.log(attrID)
                                             return(
                                                 item.attributes.length
                                                     ?   <button
@@ -58,7 +57,6 @@ const mapStateToProps = state => {
     return {
         cartProducts: state.cart.cart,
         allProducts: state.cart.allProducts
-        
     }
 }
 

@@ -51,7 +51,7 @@ class Navbar extends Component {
 
         let totalSum = 0
         let totalQty = 0
-        this.props.cartProducts.map(item => {
+        this.props.cartProducts.forEach(item => {
             totalSum += item.qty * item.prices[this.props.currency]?.amount
             totalQty += item.qty
         })
@@ -102,49 +102,47 @@ class Navbar extends Component {
                   <p style={{marginBottom: '40px'}}>
                     <span>My Bag</span>, {this.props.cartProducts.length} items
                   </p>
-                  {
-                      this.props.cartProducts.map((item,key) => {
-                        console.log(item)
-                        // let productName = item.id
-                        //this.props.
-                        return(
-                            <div key={key} className="cart__item--container" >
-                                <div className='cart__item--info'>
-                                    <span>{item.name}</span>
-                                    <span>{(item.prices[this.props.currency]?.amount*item.qty).toFixed(2)}{item.prices[this.props.currency]?.currency.symbol}</span>
-                                    <div className='attributes__container'>
-                                        {item?.selectedAttr?.attributes.map((attr,key)=>{
-                                          const attrID = item.id.split(",").slice(1)
-                                          console.log(attrID)
-                                            return(
-                                                item.attributes.length
-                                                    ?   <button
-                                                            key={key}
-                                                            style={attr.type === 'swatch' ? {backgroundColor: `${item.attributes[key]?.items[attrID[key]]?.value}`} : {background: 'white'} }
-                                                        >
-                                                            {attr.type !== 'swatch' ? item.attributes[key]?.items[attrID[key]]?.value : ''}
-                                                        </button>
-                                                    :   ''
-                                            )
-                                        })}
-                                    </div>
-                                </div>
-                                <div style={{display: 'flex'}}>
-                                    <div className='cart__item--counter'>
-                                        <button onClick={() => addOne(item.id)}>+</button>
-                                        <span>{item.qty}</span>
-                                        <button onClick={() => subOne(item.id, item.qty)}>-</button>
-                                        
-                                    </div>
-                                    <div>
-                                        <img className='cart__img' src={item.gallery[0]} alt={item.id} />
-                                        <button className='remove__btn' onClick={() => removeFromCart(item.id)}>x</button>
-                                    </div>
-                                </div>
-                            </div>
-                        )
-                      })
-                  }
+                  <div className='cart--dropdown__container'>
+                    {
+                        this.props.cartProducts.map((item,key) => {
+                          return(
+                              <div key={key} className="cart__item--container" >
+                                  <div className='cart__item--info'>
+                                      <span>{item.name}</span>
+                                      <span>{(item.prices[this.props.currency]?.amount).toFixed(2)}{item.prices[this.props.currency]?.currency.symbol}</span>
+                                      <div className='attributes__container'>
+                                          {item?.selectedAttr?.attributes.map((attr,key)=>{
+                                            const attrID = item.id.split(",").slice(1)
+                                              return(
+                                                  item.attributes.length
+                                                      ?   <button
+                                                              key={key}
+                                                              style={attr.type === 'swatch' ? {backgroundColor: `${item.attributes[key]?.items[attrID[key]]?.value}`} : {background: 'white'} }
+                                                          >
+                                                              {attr.type !== 'swatch' ? item.attributes[key]?.items[attrID[key]]?.value : ''}
+                                                          </button>
+                                                      :   ''
+                                              )
+                                          })}
+                                      </div>
+                                  </div>
+                                  <div style={{display: 'flex'}}>
+                                      <div className='cart__item--counter'>
+                                          <button onClick={() => addOne(item.id)}>+</button>
+                                          <span>{item.qty}</span>
+                                          <button onClick={() => subOne(item.id, item.qty)}>-</button>
+                                          
+                                      </div>
+                                      <div>
+                                          <img className='cart__img' src={item.gallery[0]} alt={item.id} />
+                                          <button className='remove__btn' onClick={() => removeFromCart(item.id)}>x</button>
+                                      </div>
+                                  </div>
+                              </div>
+                          )
+                        })
+                    }
+                  </div>
                   <div className="cart__total--amount">
                     <span>Total</span>
                     <span>{totalSum.toFixed(2)}{this.props.cartProducts[0]?.prices[this.props.currency]?.currency.symbol}</span>
@@ -153,7 +151,9 @@ class Navbar extends Component {
                     <Link to='/cart'><button className="cart__btn--viewBag">VIEW BAG</button></Link>
                     <button className="cart__btn--checkOut" 
                       onClick={() => {
-                        alert(`checked out ${totalSum.toFixed(2)}${this.props.cartProducts[0]?.prices[this.props.currency]?.currency.symbol}`);
+                        this.props.cartProducts.length 
+                          ? alert(`checked out ${totalSum.toFixed(2)}${this.props.cartProducts[0]?.prices[this.props.currency]?.currency.symbol}`)
+                          : alert('Cart is Empty');
                         window.location.reload();
                         }}
                       >CHECK OUT</button>

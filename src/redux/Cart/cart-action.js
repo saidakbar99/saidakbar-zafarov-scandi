@@ -56,3 +56,9 @@ export const currencySelector = (currencyID) => {
         }
     }
 }
+
+export const attributeCleaner = () => {
+    return{
+        type: actionTypes.ATTRIBUTE_CLEANER
+    }
+}

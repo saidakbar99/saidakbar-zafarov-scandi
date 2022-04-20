@@ -32,7 +32,7 @@ client
     `,
   })
   .then((response) => {
-    response.data.category.products.map((item) => {
+    response.data.category.products.forEach((item) => {
       INITIAL_STATE.allProducts.push(item);
     });
   });
@@ -56,14 +56,13 @@ const cartReducer = (state = INITIAL_STATE, action) => {
         (prod) => prod.id === action.payload.id
       );
       const inCartItem = state.cart.find((item) =>
-        item.id == (action.payload.id+","+IdAttr) ? true : false
+        item.id === (action.payload.id+","+IdAttr) ? true : false
       );
-      console.log(item)
       return {
         ...state,
         cart: inCartItem
           ? state.cart.map((item) =>
-              item.id == action.payload.id+","+IdAttr
+              item.id === action.payload.id+","+IdAttr
                 ? { ...item, qty: item.qty + 1 }
                 : item
             )
@@ -75,16 +74,10 @@ const cartReducer = (state = INITIAL_STATE, action) => {
         cart: state.cart.filter((item) => item.id !== action.payload.id),
       };
     case actionTypes.ADD_ONE:
-      const IddAttr = state.attributes[0]?.attributes.map(attr =>{
-        return Object.values(attr)[0]
-      })
-      const sss = state.cart.find((item) =>
-        item.id == (action.payload.id) ? true : false
-      );
       return {
         ...state,
         cart: state.cart.map((item) =>
-                item.id == action.payload.id
+                item.id === action.payload.id
                   ? { ...item, qty: item.qty + 1 }
                   : item
         )
@@ -94,7 +87,7 @@ const cartReducer = (state = INITIAL_STATE, action) => {
         ...state,
         cart: state.cart.map((item) =>
           item.qty > 1
-            ? item.id == action.payload.id
+            ? item.id === action.payload.id
               ? { ...item, qty: item.qty - 1 }
               : item
             : item
@@ -117,7 +110,7 @@ const cartReducer = (state = INITIAL_STATE, action) => {
           ? [
               state.attributes.find((prod) => {
                 return prod.attributes.map((attr) => {
-                  return Object.keys(attr)[0] == action.payload.name
+                  return Object.keys(attr)[0] === action.payload.name
                     ? (attr[action.payload.name] = action.payload.id)
                     : [...state.attributes];
                 });
@@ -132,6 +125,8 @@ const cartReducer = (state = INITIAL_STATE, action) => {
               },
             ],
       };
+    case actionTypes.ATTRIBUTE_CLEANER:
+      return {...state, attributes: []}
     default:
       return state;
   }
