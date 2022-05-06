@@ -1,9 +1,10 @@
 import * as actionTypes from './cart-types'
 
-export const addToCart = (itemID) => {
+export const addToCart = (productData, itemID) => {
     return{
         type: actionTypes.ADD_TO_CART,
         payload: {
+            productData: productData,
             id: itemID,
         }
     }
@@ -37,13 +38,14 @@ export const subOne = (itemID, value) => {
     }
 }
 
-export const attributeSelector = (productID, attributeName, attribute ) => {
+export const attributeSelector = (productData, productID, attributeName, chosenAttribute ) => {
     return{
         type: actionTypes.ATTRIBUTE_SELECTOR,
         payload: {
+            productData: productData,
             productID: productID,
             name: attributeName,
-            id: attribute,
+            id: chosenAttribute,
         }
     }
 }
@@ -60,5 +62,14 @@ export const currencySelector = (currencyID) => {
 export const attributeCleaner = () => {
     return{
         type: actionTypes.ATTRIBUTE_CLEANER
+    }
+}
+
+export const activeProduct = (productID) => {
+    return{
+        type: actionTypes.ACTIVE_PRODUCT,
+        payload: {
+            id: productID,
+        }
     }
 }

@@ -1,102 +1,33 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-import { gql } from "@apollo/client";
 import { connect } from "react-redux";
+import { graphql } from "@apollo/client/react/hoc";
 
-import { addToCart } from "../redux/Cart/cart-action";
+import { addToCart, activeProduct } from "../redux/Cart/cart-action";
+import { fetchProducts } from '../graphql/queries'
 
 import buyBtn from "../assets/images/buy-btn.svg";
 
 class PLP extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      products: [],
-    };
-  }
-
-  componentDidMount() {
-    this.props.client
-      .query({
-        query: gql`
-                {
-                    category(input: {title: "${this.props.query}" }){
-                        products{
-                          id
-                          name
-                          brand
-                          gallery
-                          category
-                          inStock
-                          attributes{
-                            id
-                          }
-                          prices{
-                            currency{
-                              symbol
-                            }
-                            amount
-                          }
-                        }
-                    }
-                }
-            `,
-      })
-      .then((response) =>
-        this.setState({ products: response.data.category.products })
-      );
-  }
-
-  componentDidUpdate(props) {
-    if (props.query !== this.props.query) {
-      this.props.client
-        .query({
-          query: gql`
-                    {
-                        category(input: {title: "${this.props.query}" }){
-                            products{
-                              id
-                              name
-                              brand
-                              gallery
-                              category
-                              inStock
-                              attributes{
-                                id
-                              }
-                              prices{
-                                currency{
-                                  symbol
-                                }
-                                amount
-                              }
-                            }
-                        }
-                    }
-                `,
-        })
-        .then((response) =>
-          this.setState({ products: response.data.category.products })
-        );
-    }
-  }
-
   render() {
     const { addToCart } = this.props;
+
+    const query = this.props.query
+    const category = this.props.data.category
+    
     return (
       <div>
         <div className="category__name">
           <span>
-            {this.props.query.charAt(0).toUpperCase() +
-              this.props.query.slice(1)}
+            {query.charAt(0).toUpperCase() + query.slice(1)}
           </span>
         </div>
-
         <div className="itemsBox__container">
-          {this.state.products.map((item, key) => {
+          {category?.products.map((item, key) => {
             return (
-              <Link to={`/${item.id}`} key={key}>
+              <Link to={`/${item.id}`} key={key} onClick={() => activeProduct(item.id)}>
                 <div
+                  
                   key={key}
                   className={
                     item.inStock
@@ -128,7 +59,7 @@ class PLP extends Component {
                       <Link to="">
                         <div
                           className="buyBtn"
-                          onClick={() => addToCart(item.id)}
+                          onClick={() => addToCart(item,item.id)}
                         >
                           <img src={buyBtn} alt="buyBtn" />
                         </div>
@@ -161,14 +92,24 @@ class PLP extends Component {
 const mapStateToProps = (state) => {
   return {
     currencyID: state.cart.currency,
-    allProducts: state.cart.allProducts,
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
     addToCart: (id) => dispatch(addToCart(id)),
+    activeProduct: (id) => dispatch(activeProduct(id))
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(PLP);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)
+(
+  graphql(fetchProducts, {
+    options: (props) => ({
+      variables: { title: props.query ?? 'all'},
+    })
+  })(PLP)
+);

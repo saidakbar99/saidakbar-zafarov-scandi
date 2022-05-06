@@ -1,47 +1,10 @@
 import * as actionTypes from "./cart-types";
-import { gql } from "@apollo/client";
-
-import { client } from "../../App";
-
-client
-  .query({
-    query: gql`
-      {
-        category {
-          products {
-            name
-            id
-            gallery
-            prices {
-              amount
-              currency {
-                symbol
-              }
-            }
-            attributes {
-              type
-              name
-              items {
-                value
-                displayValue
-              }
-            }
-          }
-        }
-      }
-    `,
-  })
-  .then((response) => {
-    response.data.category.products.forEach((item) => {
-      INITIAL_STATE.allProducts.push(item);
-    });
-  });
 
 const INITIAL_STATE = {
-  allProducts: [],
   cart: [],
   currency: 0,
   attributes: [],
+  activeProduct: "",
 };
 
 //========================REDUCER=============================//
@@ -52,9 +15,7 @@ const cartReducer = (state = INITIAL_STATE, action) => {
       const IdAttr = state.attributes[0]?.attributes.map(attr =>{
         return Object.values(attr)[0]
       })  
-      const item = state.allProducts.find(
-        (prod) => prod.id === action.payload.id
-      );
+      const item = action.payload.productData
       const inCartItem = state.cart.find((item) =>
         item.id === (action.payload.id+","+IdAttr) ? true : false
       );
@@ -96,9 +57,6 @@ const cartReducer = (state = INITIAL_STATE, action) => {
     case actionTypes.CURRENCY_SELECTOR:
       return { ...state, currency: action.payload.id };
     case actionTypes.ATTRIBUTE_SELECTOR:
-      const thisProduct = state.allProducts.find(
-        (prod) => prod.id === action.payload.productID
-      );
       const inAttr = state.attributes.find(
         (prod) => prod.id === action.payload.productID
       )
@@ -118,8 +76,8 @@ const cartReducer = (state = INITIAL_STATE, action) => {
             ]
           : [
               {
-                id: thisProduct.id,
-                attributes: thisProduct.attributes.map((attr) => {
+                id: action.payload.productID,
+                attributes: action.payload.productData.attributes.map((attr) => {
                   return { [attr.name]: action.payload.id, type: attr.type };
                 }),
               },
@@ -127,6 +85,8 @@ const cartReducer = (state = INITIAL_STATE, action) => {
       };
     case actionTypes.ATTRIBUTE_CLEANER:
       return {...state, attributes: []}
+    case actionTypes.ACTIVE_PRODUCT:
+      return {...state, activeProduct: action.payload.id}
     default:
       return state;
   }
