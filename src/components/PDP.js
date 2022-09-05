@@ -4,11 +4,7 @@ import { Parser } from "html-to-react";
 import { graphql } from "@apollo/client/react/hoc";
 
 import { fetchProduct } from "../graphql/queries";
-import {
-  addToCart,
-  attributeSelector,
-  attributeCleaner,
-} from "../redux/Cart/cart-action";
+import {addToCart, attributeSelector, attributeCleaner} from "../redux/Cart/cart-action";
 
 class PDP extends Component {
   constructor(props) {
@@ -62,28 +58,27 @@ class PDP extends Component {
                   let attrs = [];
                   this.props.attributes[0]?.attributes?.forEach((item) => {
                     attrs.push(Object.values(item)[0]);
-                  });
+                  })
                   return (
-                    
-                    <button
-                      key={key2}
-                      type="radio"
-                      onClick={() => attributeSelector(product,product.id,item.name,key2)}
-                      style={
-                        item.type === "swatch"
-                          ? { background: `${btn.value}` }
-                          : { background: "white" }
-                      }
-                      className={`
-                        attr__btn 
-                        ${ item.type !== "swatch" ? "attr__btn--swatch" : ""} 
-                        ${ attrs[key1] === key2 && product?.inStock ? "selected" : ""}
-                      `}
-                      id={btn.id}
-                    >
-                      {item.type !== "swatch" ? btn.value : ""}
-                    </button>
-                  );
+                      <button
+                        key={key2}
+                        type="radio"
+                        onClick={() => attributeSelector(product,product.id,item.name,key2)}
+                        style={
+                          item.type === "swatch"
+                            ? { background: `${btn.value}` }
+                            : { background: "white" }
+                        }
+                        className={`attr__btn 
+                          ${ item.type !== "swatch" ? "attr__btn--notSwatch" : "attr__btn--swatch"} 
+                          ${ attrs[key1] === key2 && product?.inStock && item.type !== 'swatch' ? "selected" : ""}
+                          ${ attrs[key1] === key2 && product?.inStock && item.type === 'swatch' ? "selected--swatch" : ""}
+                        `}
+                        id={btn.id}
+                      >
+                        {item.type !== "swatch" ? btn.value : ""}
+                      </button>
+                  )
                 })}
               </div>
             );

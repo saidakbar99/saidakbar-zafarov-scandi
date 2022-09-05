@@ -71,9 +71,8 @@ class PLP extends Component {
                       <p>OUT OF STOCK</p>
                     </div>
                     <div className="item__brand">
-                      <span>{item.brand}</span>
-                      <span>{item.name}</span>
-                      <span>
+                      <span>{item.brand} {item.name}</span>
+                        <span>
                         {item.prices[this.props.currencyID]?.currency.symbol}
                         {item.prices[this.props.currencyID]?.amount}
                       </span>

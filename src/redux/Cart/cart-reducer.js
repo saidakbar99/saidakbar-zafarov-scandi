@@ -2,37 +2,47 @@ import * as actionTypes from "./cart-types";
 
 const INITIAL_STATE = {
   cart: [],
-  currency: 0,
+  currency: '$',
   attributes: [],
   activeProduct: "",
-};
-
-//========================REDUCER=============================//
+  activeCategory: "all",
+  toggleCurrencyDropdown: false,
+  toggleCartDropdown: false,
+}
 
 const cartReducer = (state = INITIAL_STATE, action) => {
   switch (action.type) {
     case actionTypes.ADD_TO_CART:
-      const IdAttr = state.attributes[0]?.attributes.map(attr =>{
-        return Object.values(attr)[0]
-      })  
-      const item = action.payload.productData
-      const inCartItem = state.cart.find((item) =>
-        item.id === (action.payload.id+","+IdAttr) ? true : false
-      );
-      return {
+      const idFromAttrs = state.attributes.map(attr => {
+        return Object.values(attr)[1]
+      })
+      const idWithAttrs = action.payload.id + '-' + idFromAttrs.join('-')
+      const addedProduct = action.payload
+
+      const isDuplicateProduct = state.cart.find((product) =>
+        product.id === idWithAttrs ? true : false
+      )
+      return{
         ...state,
-        cart: inCartItem
-          ? state.cart.map((item) =>
-              item.id === action.payload.id+","+IdAttr
-                ? { ...item, qty: item.qty + 1 }
-                : item
+        cart: isDuplicateProduct
+          ? state.cart.map((product) =>{
+            return(
+              product.id === idWithAttrs
+              ? {...product, qty: product.qty+1}
+              : product
             )
-          : [...state.cart, { ...item , qty: 1, selectedAttr: state.attributes[0], id: action.payload.id + "," + IdAttr}],
+          }
+          )
+          : [...state.cart, {...addedProduct, qty: 1, id: idWithAttrs, attributes: state.attributes}]
       };
     case actionTypes.REMOVE_FROM_CART:
       return {
         ...state,
         cart: state.cart.filter((item) => item.id !== action.payload.id),
+      };
+    case actionTypes.CART_CLEANER:
+      return {
+        ...state, cart: []
       };
     case actionTypes.ADD_ONE:
       return {
@@ -42,7 +52,7 @@ const cartReducer = (state = INITIAL_STATE, action) => {
                   ? { ...item, qty: item.qty + 1 }
                   : item
         )
-      }
+      };
     case actionTypes.SUB_ONE:
       return {
         ...state,
@@ -55,41 +65,43 @@ const cartReducer = (state = INITIAL_STATE, action) => {
         ),
       };
     case actionTypes.CURRENCY_SELECTOR:
-      return { ...state, currency: action.payload.id };
+      return { ...state, currency: action.payload };
     case actionTypes.ATTRIBUTE_SELECTOR:
-      const inAttr = state.attributes.find(
-        (prod) => prod.id === action.payload.productID
-      )
-        ? true
-        : false;
       return {
         ...state,
-        attributes: inAttr
-          ? [
-              state.attributes.find((prod) => {
-                return prod.attributes.map((attr) => {
-                  return Object.keys(attr)[0] === action.payload.name
-                    ? (attr[action.payload.name] = action.payload.id)
-                    : [...state.attributes];
-                });
-              }),
-            ]
-          : [
-              {
-                id: action.payload.productID,
-                attributes: action.payload.productData.attributes.map((attr) => {
-                  return { [attr.name]: action.payload.id, type: attr.type };
-                }),
-              },
-            ],
+        attributes: !state.attributes.find(
+          (prod) => prod.attrName === action.payload.attrName
+        )
+          ? [...state.attributes, action.payload]
+          : state.attributes.map((attr) => {
+              if (attr.attrName === action.payload.attrName) {
+                return action.payload;
+              } else {
+                return attr;
+              }
+            })
       };
     case actionTypes.ATTRIBUTE_CLEANER:
-      return {...state, attributes: []}
+      return {...state, attributes: []};
     case actionTypes.ACTIVE_PRODUCT:
-      return {...state, activeProduct: action.payload.id}
+      return {...state, activeProduct: action.payload};
+    case actionTypes.SET_ACTIVE_CATEGORY:
+      return {...state, activeCategory: action.payload};
+    case actionTypes.TOGGLE_CURRENCY_DROPDOWN:
+      return {
+        ...state,
+        toggleCurrencyDropdown:
+        action.payload ? !state.toggleCurrencyDropdown : false
+      };
+    case actionTypes.TOGGLE_CART_DROPDOWN:
+      return {
+        ...state,
+        toggleCartDropdown:
+        action.payload ? !state.toggleCartDropdown : false
+      };
     default:
       return state;
   }
-};
+}
 
 export default cartReducer;

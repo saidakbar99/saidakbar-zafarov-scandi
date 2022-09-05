@@ -9,46 +9,63 @@ class Cart extends Component {
     super(props);
 
     this.state = {
-      activeImg: 0,
-    };
-  }
-
-  nextImage(len){
-    let i = this.state.activeImg
-    i++
-    i = i % len
-    this.setState({ activeImg: i})
-  }
-
-  previousImage(len){
-    let i = this.state.activeImg
-    i--
-    if(i<0){
-      i+=len
+      activeImg: []
     }
-    this.setState({ activeImg: i })
+  }
+
+  componentDidMount() {
+    const imageCopy = []
+    for(let i=0; this.props.cartProducts.length>i; i++){
+      imageCopy.push(0)
+      this.setState({ activeImg: imageCopy})
+    }
   }
   
   render() {
     const { addOne } = this.props;
     const { removeFromCart } = this.props;
     const { subOne } = this.props;
+    const img = this.state.activeImg
+    const imgCopy = [...img]
+
+
+    function nextImage(len,key){
+      let i = img[key]
+      i++
+      i = i % len
+      this.setState(prevState => ({
+        activeImg: {
+          ...prevState.activeImg,
+          [prevState.activeImg[key]]: i
+        }
+      }))
+      // img[key] = i
+      // this.setState({ activeImg: imgCopy })
+    }
+
+    function previousImage(len,key){
+      let i = imgCopy[key]
+      i--
+      if(i<0){ i+=len }
+      imgCopy[key] = i
+    }
 
     let totalSum = 0;
     let totalQty = 0;
     this.props.cartProducts.forEach((item) => {
       totalSum += item.qty * item.prices[this.props.currency]?.amount;
       totalQty += item.qty;
-    });
-    
+    })
+
     return (
       <div>
         <div className="category__name">
           <span>Cart</span>
         </div>
-        {this.props.cartProducts.map((item, key) => {
+        {this.props.cartProducts.map((item, key1) => {
+          
           return (
-            <div key={key} className="cart__item--container cart__border">
+            <div key={key1} className="cart__item--container cart__border">
               <div className="bagCart__item--left">
                 <span>{item.brand}</span>
                 <span style={{ marginBottom: "30px", fontSize: "40px" }}>
@@ -95,11 +112,12 @@ class Cart extends Component {
                 </div>
                 <div className="carousel__img">
                   <img className="carousel__btn left_btn" src={CarouselBtn} alt='left-btn' 
-                    onClick={() => this.previousImage(item.gallery.length)} 
+                    onClick={() => previousImage(item.gallery.length,key1)} 
                   />
-                  <img id="cart__img" src={item.gallery[this.state.activeImg]} alt={item.id} />
+                  {console.log(img[key1])}
+                  <img id="cart__img" src={item.gallery[img[key1]]} alt={item.id} />
                   <img className="carousel__btn" src={CarouselBtn} alt='right-btn' 
-                    onClick={() => this.nextImage(item.gallery.length)} 
+                    onClick={() => nextImage(item.gallery.length,key1)} 
                   />
                 </div>
                 <button onClick={() => removeFromCart(item.id)}>x</button>

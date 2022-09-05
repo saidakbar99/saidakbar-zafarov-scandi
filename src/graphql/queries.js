@@ -64,3 +64,12 @@ export const fetchProduct = gql`
     }
   }
 `;
+
+export const fetchCurrencies = gql`
+    query {
+        currencies {
+            label
+            symbol
+        }
+    }
+`

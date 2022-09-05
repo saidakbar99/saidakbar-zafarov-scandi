@@ -1,12 +1,9 @@
 import * as actionTypes from './cart-types'
 
-export const addToCart = (productData, itemID) => {
+export const addToCart = (product) => {
     return{
         type: actionTypes.ADD_TO_CART,
-        payload: {
-            productData: productData,
-            id: itemID,
-        }
+        payload: product
     }
 }
 
@@ -16,6 +13,12 @@ export const removeFromCart = (itemID) => {
         payload: {
             id: itemID,
         }
+    }
+}
+
+export const cartCleaner = () => {
+    return {
+        type: actionTypes.CART_CLEANER
     }
 }
 
@@ -38,24 +41,17 @@ export const subOne = (itemID, value) => {
     }
 }
 
-export const attributeSelector = (productData, productID, attributeName, chosenAttribute ) => {
+export const attributeSelector = (obj) => {
     return{
         type: actionTypes.ATTRIBUTE_SELECTOR,
-        payload: {
-            productData: productData,
-            productID: productID,
-            name: attributeName,
-            id: chosenAttribute,
-        }
+        payload: obj
     }
 }
 
-export const currencySelector = (currencyID) => {
+export const currencySelector = (currency) => {
     return{
         type: actionTypes.CURRENCY_SELECTOR,
-        payload: {
-            id: currencyID,
-        }
+        payload: currency
     }
 }
 
@@ -68,8 +64,26 @@ export const attributeCleaner = () => {
 export const activeProduct = (productID) => {
     return{
         type: actionTypes.ACTIVE_PRODUCT,
-        payload: {
-            id: productID,
-        }
+        payload: productID
+    }
+}
+
+export const activeCategory = (category) => {
+    return{
+        type: actionTypes.SET_ACTIVE_CATEGORY,
+        payload: category
+    }
+}
+
+export const toggleCurrencyDropdown = (bool) => {
+    return{
+        type: actionTypes.TOGGLE_CURRENCY_DROPDOWN,
+        payload: bool
+    }
+}
+export const toggleCartDropdown = (bool) => {
+    return{
+        type: actionTypes.TOGGLE_CART_DROPDOWN,
+        payload: bool
     }
 }
