@@ -8,7 +8,8 @@ import {
     subOne,
     toggleCartDropdown,
     toggleCurrencyDropdown,
-    cartCleaner
+    cartCleaner,
+    activeCategory
 } from "../../redux/Cart/cart-action";
 import { productPrice } from '../../helpers/utils';
 import cart from "../../assets/images/cart.svg";
@@ -33,6 +34,7 @@ class NavbarCart extends Component {
         const { dispatchCartDropdown } = this.props
         const { dispatchCurrencyDropdown } = this.props
         const { cartCleaner } = this.props
+        const { dispatchActiveCategory } = this.props
         const cartDropdown = this.props.toggleCartDropdown
         const activeCurrency = this.props.currency
 
@@ -63,6 +65,11 @@ class NavbarCart extends Component {
         const checkOut = () => {
             alert(`checked out ${activeCurrency + totalSum.toFixed(2)}`)
             cartCleaner()
+            dispatchCartDropdown(false)
+        }
+
+        const goToCart = () => {
+            dispatchActiveCategory()
             dispatchCartDropdown(false)
         }
         return(
@@ -112,7 +119,7 @@ class NavbarCart extends Component {
                                         return(
                                             <div key={id} className='cartOverlay__attr--container'>
                                                 <span>{attr.attrName}:</span>
-                                                <button className='p-2'>
+                                                <button className='cartOverlay__attrValue'>
                                                     {attr.attrValue}
                                                 </button>
                                             </div>
@@ -124,11 +131,16 @@ class NavbarCart extends Component {
                                     <div className="cart__item--counter">
                                         <button onClick={() => addOne(item.id)}>+</button>
                                         <span>{item.qty}</span>
-                                        <button onClick={() => subOne(item.id, item.qty)}>-</button>
+                                        <button 
+                                            onClick={() => subOne(item.id, item.qty)}
+                                            className={item.qty<2 ? 'btn__opacity' : ''}
+                                        >
+                                            -
+                                        </button>
                                     </div>
                                     <div className='cart__item--image'>
                                         <img
-                                            className="cart__img"
+                                            className="cartOverlay__img"
                                             src={item.gallery[0]}
                                             alt={item.id}
                                         />
@@ -136,7 +148,7 @@ class NavbarCart extends Component {
                                             className="remove__btn"
                                             onClick={() => RemoveProduct(item.id)}
                                         >
-                                            remove
+                                            x
                                         </button>
                                     </div>
                                 </div>
@@ -154,7 +166,7 @@ class NavbarCart extends Component {
                         <Link to="/cart">
                             <button 
                                 className="cart__btn--viewBag"
-                                onClick={() => dispatchCartDropdown(false)}
+                                onClick={goToCart}
                             >
                                 VIEW BAG
                             </button>
@@ -191,6 +203,7 @@ const mapStateToProps = (state) => {
       subOne: (id, value) => dispatch(subOne(id, value)),
       dispatchCartDropdown: (bool) => dispatch(toggleCartDropdown(bool)),
       dispatchCurrencyDropdown: (bool) => dispatch(toggleCurrencyDropdown(bool)),
+      dispatchActiveCategory: (category) => dispatch(activeCategory(category)),
       cartCleaner: () => dispatch(cartCleaner())
     };
   };
