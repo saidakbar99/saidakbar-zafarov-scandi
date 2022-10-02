@@ -19,6 +19,7 @@ class Product extends React.Component {
 	}
 
 	componentDidMount() {
+		window.scrollTo(0, 0);
 		this.props.attributeCleaner();
 		this.props.data.loading === false &&
 			this.props.data.product.attributes.forEach((attr) => {
@@ -104,6 +105,12 @@ class Product extends React.Component {
 										<span>{item.name.toUpperCase()}:</span>
 										<br />
 										{item.items.map((btn, key2) => {
+											const isSwatch = item.type === "swatch";
+											const isSelected =
+												product?.inStock &&
+												this.props.attributes.find(
+													(attr) => attr.attrName === item.name && attr.attrValue === btn.value
+												);
 											return (
 												<button
 													key={key2}
@@ -114,26 +121,10 @@ class Product extends React.Component {
 															attrValue: btn.value,
 														})
 													}
-													style={
-														item.type === "swatch"
-															? { background: `${btn.value}` }
-															: { background: "white" }
-													}
-													// remove style !!!
+													style={isSwatch ? { background: `${btn.value}` } : {}}
 													className={`attr__btn 
-													${item.type !== "swatch" ? "attr__btn--notSwatch" : "attr__btn--swatch"}
-													${
-														product?.inStock &&
-														this.props.attributes.find(
-															(attr) =>
-																attr.attrName === item.name && attr.attrValue === btn.value
-														)
-															? item.type !== "swatch"
-																? "selected"
-																: "selected--swatch"
-															: ""
-													}
-                          							`}
+													${isSwatch ? "attr__btn--swatch" : "attr__btn--notSwatch"}
+													${isSelected ? (isSwatch ? "selected--swatch" : "selected") : ""}`}
 													id={btn.id}
 												>
 													{item.type !== "swatch" ? btn.value : ""}

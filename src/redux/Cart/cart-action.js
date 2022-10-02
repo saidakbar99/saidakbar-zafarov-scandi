@@ -81,9 +81,17 @@ export const toggleCurrencyDropdown = (bool) => {
 		payload: bool,
 	};
 };
+
 export const toggleCartDropdown = (bool) => {
 	return {
 		type: actionTypes.TOGGLE_CART_DROPDOWN,
 		payload: bool,
+	};
+};
+
+export const filterAttributes = (obj) => {
+	return {
+		type: actionTypes.FILTER_ATTRIBUTES,
+		payload: obj,
 	};
 };

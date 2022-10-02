@@ -20,6 +20,7 @@ export const fetchProducts = gql`
 					name
 					items {
 						value
+						displayValue
 					}
 				}
 			}

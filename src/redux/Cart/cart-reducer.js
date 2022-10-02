@@ -8,6 +8,7 @@ const INITIAL_STATE = {
 	activeCategory: "all",
 	toggleCurrencyDropdown: false,
 	toggleCartDropdown: false,
+	filterAttributes: {},
 };
 
 const cartReducer = (state = INITIAL_STATE, action) => {
@@ -26,8 +27,8 @@ const cartReducer = (state = INITIAL_STATE, action) => {
 				...state,
 				cart: isDuplicateProduct
 					? state.cart.map((product) => {
-							return product.id === idWithAttrs
-								? { ...product, qty: product.qty + 1 }
+							return product.id === idWithAttrs 
+								? { ...product, qty: product.qty + 1 } 
 								: product;
 					  })
 					: [
@@ -73,9 +74,7 @@ const cartReducer = (state = INITIAL_STATE, action) => {
 		case actionTypes.ATTRIBUTE_SELECTOR:
 			return {
 				...state,
-				attributes: !state.attributes.find(
-					(prod) => prod.attrName === action.payload.attrName
-				)
+				attributes: !state.attributes.find((prod) => prod.attrName === action.payload.attrName)
 					? [...state.attributes, action.payload]
 					: state.attributes.map((attr) => {
 							if (attr.attrName === action.payload.attrName) {
@@ -94,14 +93,17 @@ const cartReducer = (state = INITIAL_STATE, action) => {
 		case actionTypes.TOGGLE_CURRENCY_DROPDOWN:
 			return {
 				...state,
-				toggleCurrencyDropdown: action.payload
-					? !state.toggleCurrencyDropdown
-					: false,
+				toggleCurrencyDropdown: action.payload ? !state.toggleCurrencyDropdown : false,
 			};
 		case actionTypes.TOGGLE_CART_DROPDOWN:
 			return {
 				...state,
 				toggleCartDropdown: action.payload ? !state.toggleCartDropdown : false,
+			};
+		case actionTypes.FILTER_ATTRIBUTES:
+			return {
+				...state,
+				filterAttributes: action.payload,
 			};
 		default:
 			return state;

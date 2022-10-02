@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 
-import { addOne, removeFromCart, subOne } from "../redux/Cart/cart-action";
+import { addOne, removeFromCart, subOne, cartCleaner } from "../redux/Cart/cart-action";
 import Slider from "../components/Slider";
 import { productPrice } from "../helpers/utils";
 
@@ -26,11 +26,13 @@ class Cart extends Component {
 		const { addOne } = this.props;
 		const { removeFromCart } = this.props;
 		const { subOne } = this.props;
+		const { cartCleaner } = this.props;
 		const activeCurrency = this.props.currency;
+		const cartProducts = this.props.cartProducts;
 
 		let totalSum = 0;
 		let totalQty = 0;
-		this.props.cartProducts.forEach((item) => {
+		cartProducts.forEach((item) => {
 			totalSum += parseInt(item.qty) * productPrice(item, activeCurrency);
 			totalQty += item.qty;
 		});
@@ -41,21 +43,21 @@ class Cart extends Component {
 			}
 		};
 
+		const handleClick = () => {
+			alert(`Checked out ${activeCurrency + totalSum.toFixed(2)}`);
+			cartCleaner();
+		};
+
 		return (
-			<div>
+			<div className="cart__container">
 				<div className="category__name">
-					<span className="cart-name">
-						{this.props.cartProducts.length ? "CART" : "CART IS EMPTY"}
-					</span>
+					<span className="cart-name">{cartProducts.length ? "CART" : "CART IS EMPTY"}</span>
 				</div>
-				{this.props.cartProducts.length ? (
-					<div className="cart__container">
-						{this.props.cartProducts.map((item) => {
+				{cartProducts.length ? (
+					<div>
+						{cartProducts.map((item) => {
 							return (
-								<div
-									key={item.id}
-									className="cart__item--container cart__border"
-								>
+								<div key={item.id} className="cart__item--container cart__border">
 									<div className="bagCart__item--left">
 										<span>{item.brand}</span>
 										<span className="cart-item-name">{item.name}</span>
@@ -65,37 +67,15 @@ class Cart extends Component {
 										</span>
 										<div className="cart__item--attributes--container">
 											{item.attributes.map((attr, key) => {
-												// const attrID = item.id.split(",").slice(1);
-												// return item.attributes.length ? (
-												//   <div className="cart__item--attributes">
-												//     <span>
-												//       {[Object.keys(attr)[0]]}:
-												//     </span>
-												//     <button
-												//       className="cart__item--attributes--btn"
-												//       key={key}
-												//       style={attr.type === "swatch"
-												//           ? {backgroundColor: `${item.attributes[key]?.items[attrID[key]]?.value}`}
-												//           : {background: "white" }
-												//       }
-												//     >
-												//       {attr.type !== "swatch"
-												//         ? item.attributes[key]?.items[attrID[key]]?.value
-												//         : ""}
-												//     </button>
-												//   </div>
-												// ) : (
-												//   ""
-												// )
 												return (
 													<div key={key} className="cart__item--attrs">
-														<span className="">{attr.attrName}:</span>
+														<span className="cart__attrName">{attr.attrName}:</span>
 														<button
-															className={`cartOverlay__attrValue ml-0
+															className={` cart__item--attributes--btn 
                                 ${
 																	attr.attrName === "Color"
 																		? "btn-32-32"
-																		: "btn-63-45"
+																		: "btn-63-45 cart__attrValue"
 																}
                               `}
 															style={
@@ -141,9 +121,7 @@ class Cart extends Component {
 									<p>Total: </p>
 								</div>
 								<div className="totalOrder__nums">
-									<span className="mb-8">
-										{this.props.currency + (totalSum * 0.21).toFixed(2)}
-									</span>
+									<span className="mb-8">{this.props.currency + (totalSum * 0.21).toFixed(2)}</span>
 									<span className="mb-8">{totalQty}</span>
 									<span className="mb-8">
 										{this.props.currency}
@@ -151,7 +129,9 @@ class Cart extends Component {
 									</span>
 								</div>
 							</div>
-							<button className="cart__btn--checkOut OrderSize">ORDER</button>
+							<button className="cart__btn--checkOut OrderSize" onClick={handleClick}>
+								ORDER
+							</button>
 						</div>
 					</div>
 				) : (
@@ -174,6 +154,7 @@ const mapDispatchToProps = (dispatch) => {
 		addOne: (id) => dispatch(addOne(id)),
 		removeFromCart: (id) => dispatch(removeFromCart(id)),
 		subOne: (id, value) => dispatch(subOne(id, value)),
+		cartCleaner: () => dispatch(cartCleaner()),
 	};
 };
 
