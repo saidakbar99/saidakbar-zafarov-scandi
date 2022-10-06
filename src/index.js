@@ -5,9 +5,12 @@ import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
 
 import { Provider } from "react-redux";
 import store from "./redux/store";
+import App from "./App";
+
+import "./assets/style/global.css";
+import "./assets/style/Scrolls.css";
 import "./assets/style/App.css";
 import "./assets/style/Toaster.css";
-import App from "./App";
 
 const client = new ApolloClient({
 	uri: "http://localhost:4000",

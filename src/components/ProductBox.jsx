@@ -10,59 +10,85 @@ class ProductBox extends React.Component {
 		super(props);
 		this.state = { toaster: false };
 	}
-	render() {
-		const item = this.props.item;
-		const { addToCart } = this.props;
 
-		const addProductFromPlp = (item) => {
-			addToCart(item);
-			this.setState({ toaster: true });
+	notification = () =>
+		setTimeout(
+			function () {
+				this.setState({ toaster: false });
+			}.bind(this),
+			1000
+		);
 
-			const notification = setTimeout(
-				function () {
-					this.setState({ toaster: false });
-				}.bind(this),
-				1000
-			);
-		};
+	addProductFromPlp = (item) => {
+		this.props.addToCart(item);
+		this.setState({ toaster: true });
+		this.notification();
+	};
 
+	componentWillUnmount() {
+		clearTimeout(this.notification);
+	}
+
+	renderProduct() {
+		const { item, currency } = this.props;
+		return (
+			<Link to={`/product/${item.id}`}>
+				<div className="items" id="p-relative">
+					<img
+						className={item.inStock ? "" : "outOfStock__img"}
+						src={item.gallery[0]}
+						alt={item.id}
+					/>
+					<div className={item.inStock ? "inStock" : "outOfStock__text"}>
+						<p>OUT OF STOCK</p>
+					</div>
+					<div className="item__brand">
+						<span className="item-brand-text">
+							{item.brand} {item.name}
+						</span>
+						<span>{currency + productPrice(item, currency)}</span>
+					</div>
+				</div>
+			</Link>
+		);
+	}
+
+	renderBuyButton() {
+		const { item } = this.props;
 		return (
 			<>
-				<div className={item.inStock ? "items__container" : "outOfStock"}>
+				{item.attributes.length ? (
 					<Link to={`/product/${item.id}`}>
-						<div className="items" id="p-relative">
-							<img
-								className={item.inStock ? "" : "outOfStock__img"}
-								src={item.gallery[0]}
-								alt={item.id}
-							/>
-							<div className={item.inStock ? "inStock" : "outOfStock__text"}>
-								<p>OUT OF STOCK</p>
-							</div>
-							<div className="item__brand">
-								<span className="item-brand-text">
-									{item.brand} {item.name}
-								</span>
-								<span>{this.props.currency + productPrice(item, this.props.currency)}</span>
-							</div>
-						</div>
-					</Link>
-
-					{item.attributes.length ? (
-						<Link to={`/product/${item.id}`}>
-							<button className="buyBtn" onClick={() => alert("Choose attributes.")}>
-								<img src={buyBtn} alt="buyBtn" />
-							</button>
-						</Link>
-					) : (
-						<button className="buyBtn" onClick={() => addProductFromPlp(item)}>
+						<button className="buyBtn" onClick={() => alert("Choose attributes.")}>
 							<img src={buyBtn} alt="buyBtn" />
 						</button>
-					)}
-				</div>
-				<Toaster show={this.state.toaster} />
+					</Link>
+				) : (
+					<button className="buyBtn" onClick={() => this.addProductFromPlp(item)}>
+						<img src={buyBtn} alt="buyBtn" />
+					</button>
+				)}
 			</>
 		);
+	}
+
+	renderProductBoxContent() {
+		const { item } = this.props;
+		const { toaster } = this.state;
+		const isOutOfStock = item.inStock ? "items__container" : "outOfStock";
+		return (
+			<>
+				<div className={isOutOfStock}>
+					{this.renderProduct()}
+					{this.renderBuyButton()}
+				</div>
+				<Toaster show={toaster} />
+			</>
+		);
+	}
+
+	render() {
+		return <>{this.renderProductBoxContent()}</>;
 	}
 }
 

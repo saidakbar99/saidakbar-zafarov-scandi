@@ -95,3 +95,17 @@ export const filterAttributes = (obj) => {
 		payload: obj,
 	};
 };
+
+export const checkboxCancel = (bool) => {
+	return {
+		type: actionTypes.CHECKBOX_CANCEL,
+		payload: bool,
+	};
+};
+
+export const isPageChanged = (bool) => {
+	return {
+		type: actionTypes.IS_PAGE_CHANGED,
+		payload: bool,
+	};
+};

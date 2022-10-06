@@ -1,0 +1,51 @@
+* {
+	box-sizing: border-box;
+	font-family: "Raleway", sans-serif;
+	text-decoration: none !important;
+}
+button {
+	background-color: white;
+	cursor: pointer;
+}
+a {
+	cursor: default;
+}
+.bg-white {
+	background-color: white !important;
+}
+.mb-40 {
+	margin-bottom: 40px !important;
+}
+.pos-relative {
+	position: relative !important;
+}
+#p-relative {
+	position: relative !important;
+}
+.d-flex {
+	display: flex !important;
+}
+.fz-24 {
+	font-size: 24px !important;
+}
+.mb-8 {
+	margin-bottom: 8px;
+}
+.ml-0 {
+	margin-left: 0 !important;
+}
+.fw-500 {
+	font-weight: 500;
+}
+.fw-700 {
+	font-weight: 700;
+}
+.p-0 {
+	padding: 0;
+}
+.p-2 {
+	padding: 2px;
+}
+.mr-8 {
+	margin-right: 8px;
+}

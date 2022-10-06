@@ -18,22 +18,42 @@ class Product extends React.Component {
 		};
 	}
 
+	notification = () =>
+		setTimeout(
+			function () {
+				this.setState({ toaster: false });
+			}.bind(this),
+			1000
+		);
+
 	componentDidMount() {
-		window.scrollTo(0, 0);
-		this.props.attributeCleaner();
-		this.props.data.loading === false &&
-			this.props.data.product.attributes.forEach((attr) => {
-				this.props.attributeSelector({
+		const {
+			attributeCleaner,
+			attributeSelector,
+			data: { loading, product },
+		} = this.props;
+
+		if (!loading) {
+			product.attributes.forEach((attr) => {
+				attributeSelector({
 					attrName: attr.name,
 					attrValue: attr.items[0].value,
 				});
 			});
+		}
+		window.scrollTo(0, 0);
+		attributeCleaner();
 	}
 
 	componentDidUpdate(prevProps) {
-		if (this.props.data.loading !== prevProps.data.loading) {
-			this.props.data.product.attributes.forEach((attr) => {
-				this.props.attributeSelector({
+		const {
+			attributeSelector,
+			data: { loading, product },
+		} = this.props;
+
+		if (loading !== prevProps.data.loading) {
+			product.attributes.forEach((attr) => {
+				attributeSelector({
 					attrName: attr.name,
 					attrValue: attr.items[0].value,
 				});
@@ -42,37 +62,136 @@ class Product extends React.Component {
 	}
 
 	componentWillUnmount() {
-		clearTimeout();
-		//todo: add qigandan keyin srazu chiqib ketsa utechka pamyati
+		clearTimeout(this.notification);
 	}
 
-	render() {
+	toggleImage = (id) => {
+		this.setState({ mainImage: id });
+	};
+
+	setAttributes = (name, value) => {
+		const { attributeSelector } = this.props;
+		attributeSelector({
+			attrName: name,
+			attrValue: value,
+		});
+	};
+
+	addProduct = () => {
 		const {
-			data: { loading, product },
+			addToCart,
+			data: { product },
 		} = this.props;
-		const gallery = product?.gallery;
-		const attributes = product?.attributes;
-		const { addToCart } = this.props;
 
-		const setAttributes = (obj) => {
-			this.props.attributeSelector(obj);
-		};
+		addToCart(product);
+		this.setState({ toaster: true });
 
-		const toggleImage = (id) => {
-			this.setState({ mainImage: id });
-		};
+		this.notification();
+	};
 
-		const addProduct = () => {
-			addToCart(product);
-			this.setState({ toaster: true });
+	renderProductGallery() {
+		const {
+			data: {
+				product: { gallery },
+			},
+		} = this.props;
+		const { mainImage } = this.state;
 
-			const notification = setTimeout(
-				function () {
-					this.setState({ toaster: false });
-				}.bind(this),
-				1000
-			);
-		};
+		return (
+			<div className="item__gallery">
+				<div className="gallery__col">
+					{gallery?.map((item, key) => {
+						return (
+							<img
+								key={key}
+								src={item}
+								alt={key}
+								onClick={() => this.toggleImage(key)}
+								className="gallery__image"
+							/>
+						);
+					})}
+				</div>
+				<img src={gallery && gallery[mainImage]} alt="mainImg" />
+			</div>
+		);
+	}
+
+	renderProductAttributes() {
+		const {
+			data: {
+				product: { attributes, inStock },
+			},
+		} = this.props;
+		return (
+			<>
+				{attributes.map((item, key1) => {
+					const { type, name, items } = item;
+					const isSwatch = type === "swatch";
+					return (
+						<div key={key1}>
+							<span>{name.toUpperCase()}:</span>
+							<br />
+							{items.map((btn, key2) => {
+								const { value, id } = btn;
+								const isSelected =
+									inStock &&
+									this.props.attributes.find(
+										(attr) => attr.attrName === name && attr.attrValue === value
+									);
+								return (
+									<button
+										key={key2}
+										type="radio"
+										onClick={() => this.setAttributes(name, value)}
+										style={isSwatch ? { background: `${value}` } : {}}
+										className={`attr__btn ${
+											isSwatch ? "attr__btn--swatch" : "attr__btn--notSwatch"
+										} ${isSelected ? (isSwatch ? "selected--swatch" : "selected") : ""}`}
+										id={id}
+									>
+										{!isSwatch && value}
+									</button>
+								);
+							})}
+						</div>
+					);
+				})}
+			</>
+		);
+	}
+
+	renderProductInfo() {
+		const {
+			currency,
+			data: {
+				product,
+				product: { inStock, description, brand, name },
+			},
+		} = this.props;
+		return (
+			<div className="item__attributes">
+				<p className="product__brand">{brand}</p>
+				<p className="product__name">{name}</p>
+				{this.renderProductAttributes()}
+				<span>PRICE:</span>
+				<span className="fz-24">{currency + productPrice(product, currency)}</span>
+				<button
+					onClick={inStock && this.addProduct}
+					id={inStock ? "add__btn" : "add__btn--outOfStock"}
+				>
+					{inStock ? "ADD TO CART" : "OUT OF STOCK"}
+				</button>
+				<div id="unset-formatting">{Parser().parse(description)}</div>
+			</div>
+		);
+	}
+
+	renderProductContent() {
+		const {
+			data: { loading },
+		} = this.props;
+		const { toaster } = this.state;
 
 		if (loading) {
 			return <></>;
@@ -80,77 +199,17 @@ class Product extends React.Component {
 			return (
 				<>
 					<div className="item__description--container">
-						<div className="item__gallery">
-							<div className="gallery__col">
-								{gallery?.map((item, key) => {
-									return (
-										<img
-											key={key}
-											src={item}
-											alt={key}
-											onClick={() => toggleImage(key)}
-											className="gallery__image"
-										/>
-									);
-								})}
-							</div>
-							<img src={gallery ? gallery[this.state.mainImage] : ""} alt="mainImg" />
-						</div>
-						<div className="item__attributes">
-							<h2>{product.brand}</h2>
-							<h3>{product.name}</h3>
-							{attributes.map((item, key1) => {
-								return (
-									<div key={key1}>
-										<span>{item.name.toUpperCase()}:</span>
-										<br />
-										{item.items.map((btn, key2) => {
-											const isSwatch = item.type === "swatch";
-											const isSelected =
-												product?.inStock &&
-												this.props.attributes.find(
-													(attr) => attr.attrName === item.name && attr.attrValue === btn.value
-												);
-											return (
-												<button
-													key={key2}
-													type="radio"
-													onClick={() =>
-														setAttributes({
-															attrName: item.name,
-															attrValue: btn.value,
-														})
-													}
-													style={isSwatch ? { background: `${btn.value}` } : {}}
-													className={`attr__btn 
-													${isSwatch ? "attr__btn--swatch" : "attr__btn--notSwatch"}
-													${isSelected ? (isSwatch ? "selected--swatch" : "selected") : ""}`}
-													id={btn.id}
-												>
-													{item.type !== "swatch" ? btn.value : ""}
-												</button>
-											);
-										})}
-									</div>
-								);
-							})}
-							<span>PRICE:</span>
-							<span className="fz-24">
-								{this.props.currency + productPrice(product, this.props.currency)}
-							</span>
-							<button
-								onClick={product?.inStock ? () => addProduct() : () => alert}
-								id={product?.inStock ? "add__btn" : "add__btn--outOfStock"}
-							>
-								{product?.inStock ? "ADD TO CART" : "OUT OF STOCK"}
-							</button>
-							<div id="unset-formatting">{Parser().parse(product?.description)}</div>
-						</div>
+						{this.renderProductGallery()}
+						{this.renderProductInfo()}
 					</div>
-					<Toaster show={this.state.toaster} />
+					<Toaster show={toaster} />
 				</>
 			);
 		}
+	}
+
+	render() {
+		return <>{this.renderProductContent()}</>;
 	}
 }
 

@@ -20,6 +20,15 @@ class NavbarCart extends React.Component {
 		this.cartDropdownRef = React.createRef(null);
 	}
 
+	closeCart = (e) => {
+		const { toggleCartDropdown, dispatchCartDropdown } = this.props;
+		if (toggleCartDropdown) {
+			if (!e.path.includes(this.cartDropdownRef.current)) {
+				dispatchCartDropdown(false);
+			}
+		}
+	};
+
 	componentDidMount() {
 		window.addEventListener("click", this.closeCart);
 	}
@@ -27,135 +36,205 @@ class NavbarCart extends React.Component {
 	componentWillUnmount() {
 		window.removeEventListener("click", this.closeCart);
 	}
-	render() {
-		const { addOne } = this.props;
+
+	toggleClick = () => {
+		const { dispatchCurrencyDropdown, dispatchCartDropdown } = this.props;
+		dispatchCartDropdown(true);
+		dispatchCurrencyDropdown(false);
+	};
+
+	RemoveProduct = (id) => {
 		const { removeFromCart } = this.props;
-		const { subOne } = this.props;
-		const { dispatchCartDropdown } = this.props;
-		const { dispatchCurrencyDropdown } = this.props;
-		const { cartCleaner } = this.props;
-		const { dispatchActiveCategory } = this.props;
-		const cartDropdown = this.props.toggleCartDropdown;
-		const activeCurrency = this.props.currency;
+		if (window.confirm("Do you want to remove product?")) {
+			removeFromCart(id);
+		}
+	};
 
-		this.closeCart = (e) => {
-			this.props.toggleCartDropdown &&
-				!e.path.includes(this.cartDropdownRef.current) &&
-				this.props.dispatchCartDropdown(false);
-		};
-
-		const toggleClick = () => {
-			dispatchCartDropdown(true);
-			dispatchCurrencyDropdown(false);
-		};
-
-		const RemoveProduct = (id) => {
-			if (window.confirm("Do you want to remove product?")) {
-				removeFromCart(id);
-			}
-		};
-
+	getTotal = (type) => {
+		const { currency, cartProducts } = this.props;
 		let totalSum = 0;
 		let totalQty = 0;
-		this.props.cartProducts.forEach((item) => {
-			totalSum += parseInt(item.qty) * productPrice(item, activeCurrency);
-			totalQty += item.qty;
-		});
 
-		const checkOut = () => {
-			alert(`Checked out ${activeCurrency + totalSum.toFixed(2)}`);
-			cartCleaner();
-			dispatchCartDropdown(false);
-		};
+		if (type === "sum") {
+			cartProducts.forEach((item) => {
+				totalSum += parseInt(item.qty) * productPrice(item, currency);
+			});
+			return totalSum;
+		}
 
-		const goToCart = () => {
-			dispatchActiveCategory();
-			localStorage.removeItem("activeCategory");
-			dispatchCartDropdown(false);
-		};
+		if (type === "qty") {
+			cartProducts.forEach((item) => {
+				totalQty += item.qty;
+			});
+			return totalQty;
+		}
+	};
+
+	checkOut = () => {
+		const { dispatchCartDropdown, cartCleaner, currency } = this.props;
+		alert(`Checked out ${currency + this.getTotal("sum").toFixed(2)}`);
+		cartCleaner();
+		dispatchCartDropdown(false);
+	};
+
+	goToCart = () => {
+		const { dispatchCartDropdown, dispatchActiveCategory } = this.props;
+		dispatchActiveCategory();
+		localStorage.removeItem("activeCategory");
+		dispatchCartDropdown(false);
+	};
+
+	renderCartItemLabel(item) {
+		const { currency } = this.props;
 		return (
-			<div className="navbar__cart" ref={this.cartDropdownRef}>
-				<div className="navbar-cart-logo" onClick={toggleClick}>
-					<img className="pos-relative" src={cart} alt="cart" />
-					<button className="totalQty__btn">{totalQty}</button>
+			<>
+				<div className="cart__item--branding">
+					<span className="mb-8">{item.brand}</span>
+					<span>{item.name}</span>
 				</div>
-				<div className={`cart--dropdown ${cartDropdown ? "cart-active" : ""}`}>
-					<p className="mb-40 fw-500">
-						<span className="fw-700">My Bag</span>, {this.props.cartProducts.length} items
-					</p>
-					<div className="cart--dropdown__container">
-						{this.props.cartProducts.map((item, key) => {
-							return (
-								<div key={key} className="cart__item--container">
-									<div className="cart__item--info">
-										<div className="cart__item--branding">
-											<span className="mb-8">{item.brand}</span>
-											<span>{item.name}</span>
-										</div>
-										<span className="cart__item--price">
-											{activeCurrency + productPrice(item, activeCurrency)}
-										</span>
-										<div className="attributes__container">
-											{item.attributes.map((attr, id) => {
-												const isColor = attr.attrName === "Color";
-												return (
-													<div key={id} className="cartOverlay__attr--container">
-														<span>{attr.attrName}:</span>
-														<button
-															className="cartOverlay__attrValue"
-															style={isColor ? { backgroundColor: `${attr.attrValue}` } : {}}
-														>
-															{isColor ? "" : attr.attrValue}
-														</button>
-													</div>
-												);
-											})}
-										</div>
-									</div>
-									<div className="d-flex">
-										<div className="cart__item--counter">
-											<button onClick={() => addOne(item.id)}>+</button>
-											<span>{item.qty}</span>
-											<button
-												onClick={() => subOne(item.id, item.qty)}
-												className={item.qty < 2 ? "btn__opacity" : ""}
-											>
-												-
-											</button>
-										</div>
-										<div className="cart__item--image">
-											<img className="cartOverlay__img" src={item.gallery[0]} alt={item.id} />
-											<button className="remove__btn" onClick={() => RemoveProduct(item.id)}>
-												x
-											</button>
-										</div>
-									</div>
-								</div>
-							);
-						})}
-					</div>
-					<div className="cart__total--amount">
-						<span>Total</span>
-						<span className="totalAmount">{activeCurrency + totalSum.toFixed(2)}</span>
-					</div>
-					<div className="cart__btn--container">
-						<Link to="/cart">
-							<button className="cart__btn--viewBag" onClick={goToCart}>
-								VIEW BAG
-							</button>
-						</Link>
-						<button
-							className="cart__btn--checkOut"
-							onClick={() => {
-								this.props.cartProducts.length ? checkOut() : alert("Cart is Empty");
-							}}
-						>
-							CHECK OUT
-						</button>
-					</div>
+				<span className="cart__item--price">{currency + productPrice(item, currency)}</span>
+			</>
+		);
+	}
+
+	renderCartItemAttributes(item) {
+		return (
+			<div className="attributes__container">
+				{item.attributes.map((attribute, index1) => {
+					const isColor = attribute.name === "Color";
+					return (
+						<div key={index1} className="cartOverlay__attr--container">
+							<span>{attribute.name}:</span>
+							<div>
+								{attribute.items.map((attr, index2) => {
+									const isChosen = attr.value === item.chosenAttributes[index1].attrValue;
+									return (
+										<button
+											key={index2}
+											className={`cartOverlay__attrValue ${
+												isChosen ? (isColor ? "selected--swatch" : "selected") : ''
+											}`}
+											style={isColor ? { backgroundColor: `${attr.value}` } : {}}
+										>
+											{isColor ? "" : attr.value}
+										</button>
+									);
+								})}
+							</div>
+						</div>
+					);
+				})}
+			</div>
+		);
+	}
+
+	renderCartItemInfo(item) {
+		return (
+			<div className="cart__item--info">
+				{this.renderCartItemLabel(item)}
+				{this.renderCartItemAttributes(item)}
+			</div>
+		);
+	}
+
+	renderCartItemImage(item) {
+		const { subOne, addOne } = this.props;
+		return (
+			<div className="d-flex">
+				<div className="cart__item--counter">
+					<button onClick={() => addOne(item.id)}>+</button>
+					<span>{item.qty}</span>
+					<button
+						onClick={() => subOne(item.id, item.qty)}
+						className={item.qty < 2 ? "btn__opacity" : ""}
+					>
+						-
+					</button>
+				</div>
+				<div className="cart__item--image">
+					<img className="cartOverlay__img" src={item.gallery[0]} alt={item.id} />
+					<button className="remove__btn" onClick={() => this.RemoveProduct(item.id)}>
+						x
+					</button>
 				</div>
 			</div>
 		);
+	}
+
+	renderCartItem() {
+		const { cartProducts } = this.props;
+		return (
+			<div className="cart--dropdown__container">
+				{cartProducts.map((item, key) => {
+					return (
+						<div key={key} className="cart__item--container">
+							{this.renderCartItemInfo(item)}
+							{this.renderCartItemImage(item)}
+						</div>
+					);
+				})}
+			</div>
+		);
+	}
+
+	renderCheckOut() {
+		const { cartProducts } = this.props;
+		return (
+			<div className="cart__btn--container">
+				<Link to="/cart">
+					<button className="cart__btn--viewBag" onClick={this.goToCart}>
+						VIEW BAG
+					</button>
+				</Link>
+				<button
+					className="cart__btn--checkOut"
+					onClick={() => {
+						cartProducts.length ? this.checkOut() : alert("Cart is Empty");
+					}}
+				>
+					CHECK OUT
+				</button>
+			</div>
+		);
+	}
+
+	renderCartIcon() {
+		return (
+			<div className="navbar-cart-logo" onClick={this.toggleClick}>
+				<img className="pos-relative" src={cart} alt="cart" />
+				<button className="totalQty__btn">{this.getTotal("qty")}</button>
+			</div>
+		);
+	}
+
+	renderCartDropdown() {
+		const { toggleCartDropdown, currency, cartProducts } = this.props;
+		return (
+			<div className={`cart--dropdown ${toggleCartDropdown && "cart-active"}`}>
+				<p className="mb-40 fw-500">
+					<span className="fw-700">My Bag</span>, {cartProducts.length} items
+				</p>
+				{this.renderCartItem()}
+				<div className="cart__total--amount">
+					<span>Total</span>
+					<span className="totalAmount">{currency + this.getTotal("sum").toFixed(2)}</span>
+				</div>
+				{this.renderCheckOut()}
+			</div>
+		);
+	}
+
+	renderCartContent() {
+		return (
+			<div className="navbar__cart" ref={this.cartDropdownRef}>
+				{this.renderCartIcon()}
+				{this.renderCartDropdown()}
+			</div>
+		);
+	}
+
+	render() {
+		return <>{this.renderCartContent()}</>;
 	}
 }
 

@@ -7,9 +7,10 @@ import logo from "../../assets/images/logo.svg";
 import { connect } from "react-redux";
 
 class Navbar extends React.Component {
-	render() {
+	renderNavbarContent() {
+		const { toggleCartDropdown } = this.props;
 		return (
-			<div className={this.props.toggleCartDropdown ? "cart-opened" : ""}>
+			<div className={toggleCartDropdown ? "cart-opened" : ''}>
 				<div className="navbar__container">
 					<Categories />
 					<div className="navbar__logo">
@@ -22,6 +23,10 @@ class Navbar extends React.Component {
 				</div>
 			</div>
 		);
+	}
+
+	render() {
+		return <>{this.renderNavbarContent()}</>;
 	}
 }
 

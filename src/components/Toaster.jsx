@@ -3,8 +3,8 @@ import React from "react";
 import CheckIcon from "../assets/images/check-icon.svg";
 
 class Toaster extends React.Component {
-	render() {
-		const show = this.props.show;
+	renderToasterContent() {
+		const { show } = this.props;
 		return (
 			<div className={`notification-container ${show ? "active-toaster" : ""}`}>
 				<div className="notification-image">
@@ -15,6 +15,10 @@ class Toaster extends React.Component {
 				</div>
 			</div>
 		);
+	}
+
+	render() {
+		return <>{this.renderToasterContent()}</>;
 	}
 }
 

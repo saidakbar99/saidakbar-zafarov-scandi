@@ -7,44 +7,61 @@ class Slider extends React.Component {
 		super(props);
 
 		this.state = {
-			images: this.props.images,
 			activeIndex: 0,
 		};
 	}
 
-	render() {
-		const activeIndex = this.state.activeIndex;
-		const images = this.state.images;
+	handleClick = (type) => {
+		const { activeIndex } = this.state;
+		const { images } = this.props;
 
-		const nextImg = () => {
+		type === "next" &&
 			this.setState({
 				activeIndex: activeIndex >= images.length - 1 ? 0 : activeIndex + 1,
 			});
-		};
-
-		const prevImg = () => {
+		type === "prev" &&
 			this.setState({
 				activeIndex: activeIndex === 0 ? images.length - 1 : activeIndex - 1,
 			});
-		};
+	};
+
+	renderSliderButtons() {
+		const { images } = this.props;
+		if (images.length <= 1) {
+			return <></>;
+		} else {
+			return (
+				<div className="carousel__btns">
+					<img
+						className="carousel__btn left_btn"
+						src={CarouselBtn}
+						alt="left-btn"
+						onClick={() => this.handleClick("prev")}
+					/>
+					<img
+						className="carousel__btn"
+						src={CarouselBtn}
+						alt="right-btn"
+						onClick={() => this.handleClick("next")}
+					/>
+				</div>
+			);
+		}
+	}
+
+	renderSliderContent() {
+		const { activeIndex } = this.state;
+		const { images } = this.props;
 		return (
 			<div className="carousel__img">
 				<img className="cart__img" src={images[activeIndex]} alt="carousel" />
-				{images.length > 1 ? (
-					<div className="carousel__btns">
-						<img
-							className="carousel__btn left_btn"
-							src={CarouselBtn}
-							alt="left-btn"
-							onClick={prevImg}
-						/>
-						<img className="carousel__btn" src={CarouselBtn} alt="right-btn" onClick={nextImg} />
-					</div>
-				) : (
-					""
-				)}
+				{this.renderSliderButtons()}
 			</div>
 		);
+	}
+
+	render() {
+		return <>{this.renderSliderContent()}</>;
 	}
 }
 

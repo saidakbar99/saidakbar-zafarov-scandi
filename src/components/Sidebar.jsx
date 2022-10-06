@@ -1,7 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 
-import { filterAttributes } from "../redux/Cart/cart-action";
+import { filterAttributes, checkboxCancel } from "../redux/Cart/cart-action";
 
 class Sidebar extends React.Component {
 	constructor(props) {
@@ -15,40 +15,42 @@ class Sidebar extends React.Component {
 	}
 
 	getSettedAttributes() {
+		const { dispatchFilterAttributes, location } = this.props;
 		const savedAttrs = {};
-		let settedAttributes = this.props.location.search;
+		let settedAttributes = location.search;
 
 		settedAttributes = settedAttributes.substring(1).split("&");
-		settedAttributes.map((attr) => {
+		settedAttributes.forEach((attr) => {
 			attr = attr.split("=");
 			attr[0] = attr[0].split("-").join(" ");
 			savedAttrs[attr[0]] = attr[1];
 		});
 		const mergedAttributes = { ...savedAttrs };
 		this.setState({ chosenAttributes: mergedAttributes }, () => {
-			this.props.dispatchFilterAttributes(mergedAttributes);
+			dispatchFilterAttributes(mergedAttributes);
 		});
 	}
 
 	getAllAttributes() {
-		const attrs = [];
-		const attributes = [];
+		const { products } = this.props;
+		const allAttributes = [];
+		const uniqueAttributes = [];
 		const mergedAttributes = [];
-		const attrNames = {};
+		const attributeLabels = {};
 
-		this.props.products.forEach((product) => {
+		products.forEach((product) => {
 			if (product.attributes.length) {
 				if (product.attributes.length > 1) {
 					product.attributes.forEach((attr) => {
-						attrs.push(attr);
+						allAttributes.push(attr);
 					});
 				} else {
-					attrs.push(product.attributes[0]);
+					allAttributes.push(product.attributes[0]);
 				}
 			}
 		});
 
-		attrs.forEach((attr) => {
+		allAttributes.forEach((attr) => {
 			const attrValue = [];
 			const lowerCaseName = attr.name.toLowerCase();
 
@@ -59,22 +61,22 @@ class Sidebar extends React.Component {
 					attrValue.push(item.value);
 				}
 			});
-			attributes.push({
+			uniqueAttributes.push({
 				attrName: lowerCaseName,
 				attrValue: attrValue,
 			});
 		});
 
-		attributes.forEach((attr1, index1) => {
-			attributes.forEach((attr2, index2) => {
+		uniqueAttributes.forEach((attr1, index1) => {
+			uniqueAttributes.forEach((attr2, index2) => {
 				if (attr1.attrName === attr2.attrName && index1 !== index2) {
-					attributes[index1].attrValue = [...attr1.attrValue, ...attr2.attrValue];
-					attributes[index2].attrValue = "";
+					uniqueAttributes[index1].attrValue = [...attr1.attrValue, ...attr2.attrValue];
+					uniqueAttributes[index2].attrValue = "";
 				}
 			});
 		});
 
-		attributes.forEach((attr) => {
+		uniqueAttributes.forEach((attr) => {
 			if (attr.attrValue.length) {
 				if (attr.attrName === "color") {
 					const uniqueAttrs = attr.attrValue.filter(
@@ -88,13 +90,13 @@ class Sidebar extends React.Component {
 		});
 
 		mergedAttributes.forEach((attr) => {
-			attrNames[attr.attrName] = "";
+			attributeLabels[attr.attrName] = "";
 		});
 
 		this.setState(
 			{
 				attributes: mergedAttributes,
-				chosenAttributes: attrNames,
+				chosenAttributes: attributeLabels,
 			},
 			this.getSettedAttributes
 		);
@@ -105,18 +107,21 @@ class Sidebar extends React.Component {
 	}
 
 	componentDidUpdate(prevProps) {
-		if (prevProps.activeCategory !== this.props.activeCategory) {
+		const { activeCategory, products, location } = this.props;
+
+		if (prevProps.activeCategory !== activeCategory) {
 			this.getAllAttributes();
 		}
-		if (prevProps.products.length !== this.props.products.length) {
+		if (prevProps.products.length !== products.length) {
 			this.getAllAttributes();
 		}
-		if (prevProps.location.search !== this.props.location.search) {
+		if (prevProps.location.search !== location.search) {
 			this.getSettedAttributes();
 		}
 	}
 
 	clearFilters = () => {
+		const { history, location, dispatchFilterAttributes } = this.props;
 		const emptyFilters = {};
 		const filtersCopy = [...this.state.attributes];
 
@@ -125,22 +130,25 @@ class Sidebar extends React.Component {
 		});
 
 		const clearQuery = () => {
-			this.props.history.replace(this.props.location.pathname);
+			history.replace(location.pathname);
 		};
 
 		this.setState({ chosenAttributes: emptyFilters, selectDisabled: false }, clearQuery);
-		this.props.dispatchFilterAttributes(emptyFilters);
+		dispatchFilterAttributes(emptyFilters);
 	};
 
 	changeQuery = () => {
-		this.props.history.replace(this.state.urlQuery);
+		const { history } = this.props;
+		const { urlQuery } = this.state;
+
+		history.replace(urlQuery);
 	};
 
 	getQuery = () => {
 		const queryUrl = [];
-		const chosen = this.state.chosenAttributes;
+		const { chosenAttributes } = this.state;
 
-		Object.entries(chosen).forEach((attr) => {
+		Object.entries(chosenAttributes).forEach((attr) => {
 			const formattedAttrName = attr[0].toLowerCase().split(" ").join("-");
 			const formattedAttrValue = attr[1]?.toString();
 			const query = `${formattedAttrName + "=" + formattedAttrValue}`;
@@ -154,12 +162,13 @@ class Sidebar extends React.Component {
 	};
 
 	handleClick = (name, value, type) => {
-		const chosen = this.state.chosenAttributes;
-		const chosenCopy = { ...chosen };
+		const { dispatchCheckboxCancel } = this.props;
+		const chosenCopy = { ...this.state.chosenAttributes };
 
 		if (type === "checkbox") {
 			if (chosenCopy[name] === "Yes") {
 				delete chosenCopy[name];
+				dispatchCheckboxCancel(true);
 			} else {
 				chosenCopy[name] = "Yes";
 			}
@@ -171,84 +180,135 @@ class Sidebar extends React.Component {
 		}
 		this.setState({ chosenAttributes: chosenCopy }, this.getQuery);
 	};
-	render() {
-		const chosen = this.state.chosenAttributes;
+
+	renderSelectAttributes(attr) {
+		const { chosenAttributes, selectDisabled } = this.state;
+		const isColor = attr.attrName === "color";
+		const isCheckbox = attr.attrValue[0] === "Yes" || attr.attrValue[0] === "No";
+		const isSelect = !isColor && !isCheckbox;
+
+		if (!isSelect) {
+			return <></>;
+		} else {
+			return (
+				<select
+					className="filter__select"
+					onChange={(e) => this.handleClick(attr.attrName, e.target.value, "select")}
+					value={chosenAttributes[attr.attrName]}
+				>
+					<option value="" disabled={selectDisabled}>
+						Choose...
+					</option>
+					{attr.attrValue.map((value, key) => {
+						return (
+							<option type="radio" key={key} className="filter__option">
+								{value}
+							</option>
+						);
+					})}
+				</select>
+			);
+		}
+	}
+
+	renderCheckboxAttributes(attr) {
+		const { chosenAttributes } = this.state;
+		const isCheckbox = attr.attrValue[0] === "Yes" || attr.attrValue[0] === "No";
+		const selectedCheckbox = chosenAttributes[attr.attrName] === "Yes";
+		if (!isCheckbox) {
+			return <></>;
+		} else {
+			return (
+				<button
+					type="checkbox"
+					className={`attr__btn--swatch filter__checkbox ${selectedCheckbox && "selected"}`}
+					onClick={() => this.handleClick(attr.attrName, attr.attrValue, "checkbox")}
+				>
+					✔
+				</button>
+			);
+		}
+	}
+
+	renderColorAttributes(attr) {
+		const { chosenAttributes } = this.state;
+		const isColor = attr.attrName === "color";
+		if (!isColor) {
+			return <></>;
+		} else {
+			return (
+				<>
+					{attr.attrValue.map((color, i) => {
+						const selectedSwatch = chosenAttributes["color"] === Object.keys(color)[0];
+						const isActive = selectedSwatch && "selected--swatch";
+						return (
+							<button
+								key={i}
+								type="radio"
+								className={`attr__btn--swatch filter__color ${isActive}`}
+								style={{ background: `${Object.values(color)}` }}
+								onClick={() => this.handleClick(attr.attrName, Object.keys(color)[0])}
+							></button>
+						);
+					})}
+				</>
+			);
+		}
+	}
+
+	renderSidebarAttributes() {
+		const { attributes } = this.state;
 		return (
-			<div className="sidebar__container">
-				<span className="filter__label">Shopping Options</span>
-				{this.state.attributes.map((attr, index) => {
-					const isColor = attr.attrName === "color";
-					const isCheckbox = attr.attrValue[0] === "Yes" || attr.attrValue[0] === "No";
+			<>
+				{attributes.map((attr, index) => {
 					const attrLabel = attr.attrName.charAt(0).toUpperCase() + attr.attrName.slice(1);
 					return (
 						<div key={index} className="sidebar__attrs--container">
 							<label className="attr__label">{attrLabel}:</label>
 							<div className="filter__attributes--container">
-								{!isColor && !isCheckbox ? (
-									<select
-										className="filter__select"
-										onChange={(e) => this.handleClick(attr.attrName, e.target.value, "select")}
-										value={this.state.chosenAttributes[attr.attrName]}
-									>
-										{/* 1)pustoy turishimi 2)first value turishimi 3)'choose' dib yozilganimi*/}
-										<option value="" disabled={this.state.selectDisabled}>
-											Choose...
-										</option>
-										{attr.attrValue.map((value, key) => {
-											return (
-												<option type="radio" key={key} className="filter__option">
-													{value}
-												</option>
-											);
-										})}
-									</select>
-								) : (
-									""
-								)}
-								{isCheckbox ? (
-									<button
-										type="checkbox"
-										className={`attr__btn--swatch filter__checkbox ${
-											chosen[attr.attrName] === "Yes" ? "selected" : ""
-										}`}
-										onClick={() => this.handleClick(attr.attrName, attr.attrValue, "checkbox")}
-									>
-										✔
-									</button>
-								) : isColor ? (
-									attr.attrValue.map((color, i) => {
-										const isActive =
-											chosen["color"] === Object.keys(color)[0] ? "selected--swatch" : "";
-										return (
-											<button
-												key={i}
-												type="radio"
-												className={`attr__btn--swatch filter__color ${isActive}`}
-												style={{ background: `${Object.values(color)}` }}
-												onClick={() => this.handleClick(attr.attrName, Object.keys(color)[0])}
-											></button>
-										);
-									})
-								) : (
-									""
-								)}
+								{this.renderSelectAttributes(attr)}
+								{this.renderCheckboxAttributes(attr)}
+								{this.renderColorAttributes(attr)}
 							</div>
 						</div>
 					);
 				})}
-				{this.state.attributes.length && (
-					<button className="filter__clear" onClick={this.clearFilters}>
-						Clear
-					</button>
-				)}
+			</>
+		);
+	}
+
+	renderSidebarClearButton() {
+		const { attributes } = this.state;
+		if (attributes.length < 1) {
+			return <></>;
+		} else {
+			return (
+				<button className="filter__clear" onClick={this.clearFilters}>
+					Clear
+				</button>
+			);
+		}
+	}
+
+	renderSidebarContent() {
+		return (
+			<div className="sidebar__container">
+				<span className="filter__label">Shopping Options</span>
+				{this.renderSidebarAttributes()}
+				{this.renderSidebarClearButton()}
 			</div>
 		);
+	}
+
+	render() {
+		return <>{this.renderSidebarContent()}</>;
 	}
 }
 
 const mapDispatchToProps = (dispatch) => {
 	return {
 		dispatchFilterAttributes: (obj) => dispatch(filterAttributes(obj)),
+		dispatchCheckboxCancel: (bool) => dispatch(checkboxCancel(bool)),
 	};
 };
 

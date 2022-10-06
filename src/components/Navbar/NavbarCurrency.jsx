@@ -24,55 +24,77 @@ class NavbarCurrency extends React.Component {
 		window.removeEventListener("click", this.closeBlock);
 	}
 
-	render() {
-		const currencyDropdown = this.props.toggleCurrencyDropdown;
-		const { currencySelector } = this.props;
-		const { dispatchCurrencyDropdown } = this.props;
-		const { dispatchCartDropdown } = this.props;
+	closeBlock = (e) => {
+		const { toggleCurrencyDropdown, dispatchCurrencyDropdown } = this.props;
+		if (toggleCurrencyDropdown) {
+			if (!e.path.includes(this.currencyDropdownRef.current)) {
+				dispatchCurrencyDropdown(false);
+			}
+		}
+	};
 
+	handleClick = () => {
+		const { dispatchCurrencyDropdown, dispatchCartDropdown } = this.props;
+		dispatchCurrencyDropdown(true);
+		dispatchCartDropdown(false);
+	};
+
+	renderActiveCurrency() {
+		const { currency, toggleCurrencyDropdown } = this.props;
+		return (
+			<>
+				<span>{currency}</span>
+				<img
+					className={`${toggleCurrencyDropdown && "changeArrow"}`}
+					id="arrow-down"
+					src={arrow}
+					alt="arrow"
+				/>
+			</>
+		);
+	}
+
+	renderAllCurrencies() {
 		const {
-			data: { loading, currencies },
+			currencySelector,
+			toggleCurrencyDropdown,
+			data: { currencies },
 		} = this.props;
+		return (
+			<div className={`currency__dropdown ${toggleCurrencyDropdown && "currency-active"}`}>
+				{currencies?.map((currency) => {
+					return (
+						<button
+							onClick={() => currencySelector(currency.symbol)}
+							key={currency.label}
+							className="currency__dropdown--btn"
+						>
+							{currency.symbol} {currency.label}
+						</button>
+					);
+				})}
+			</div>
+		);
+	}
 
-		const handleClick = () => {
-			dispatchCurrencyDropdown(true);
-			dispatchCartDropdown(false);
-		};
-
-		this.closeBlock = (e) => {
-			this.props.toggleCurrencyDropdown &&
-				!e.path.includes(this.currencyDropdownRef.current) &&
-				this.props.dispatchCurrencyDropdown(false);
-		};
-
+	renderNavbarCurrencyContent() {
+		const {
+			data: { loading },
+		} = this.props;
 		if (loading) {
 			return <></>;
 		} else {
 			return (
-				<div className="navbar__currency" onClick={handleClick} ref={this.currencyDropdownRef}>
-					<span>{this.props.currency}</span>
-					<img
-						className={currencyDropdown ? "changeArrow" : ""}
-						id="arrow-down"
-						src={arrow}
-						alt="arrow"
-					/>
-					<div className={`currency__dropdown ${currencyDropdown ? "currency-active" : ""}`}>
-						{currencies?.map((currency) => {
-							return (
-								<button
-									onClick={() => currencySelector(currency.symbol)}
-									key={currency.label}
-									className="currency__dropdown--btn"
-								>
-									{currency.symbol} {currency.label}
-								</button>
-							);
-						})}
-					</div>
+				<div className="navbar__currency" onClick={this.handleClick} ref={this.currencyDropdownRef}>
+					{this.renderActiveCurrency()}
+					{this.renderAllCurrencies()}
 				</div>
 			);
 		}
+	}
+
+	render() {
+		return <>{this.renderNavbarCurrencyContent()}</>;
 	}
 }
 

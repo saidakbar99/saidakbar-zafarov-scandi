@@ -15,130 +15,172 @@ class Cart extends Component {
 	}
 
 	componentDidMount() {
+		const { cartProducts } = this.props;
 		const imageCopy = [];
-		for (let i = 0; this.props.cartProducts.length > i; i++) {
+		for (let i = 0; cartProducts.length > i; i++) {
 			imageCopy.push(0);
 			this.setState({ activeImg: imageCopy });
 		}
 	}
 
-	render() {
-		const { addOne } = this.props;
-		const { removeFromCart } = this.props;
-		const { subOne } = this.props;
-		const { cartCleaner } = this.props;
-		const activeCurrency = this.props.currency;
-		const cartProducts = this.props.cartProducts;
-
+	getTotal = (type) => {
+		const { currency, cartProducts } = this.props;
 		let totalSum = 0;
 		let totalQty = 0;
-		cartProducts.forEach((item) => {
-			totalSum += parseInt(item.qty) * productPrice(item, activeCurrency);
-			totalQty += item.qty;
-		});
 
-		const RemoveProduct = (id) => {
-			if (window.confirm("Do you want to remove product?")) {
-				removeFromCart(id);
-			}
-		};
+		if (type === "sum") {
+			cartProducts.forEach((item) => {
+				totalSum += parseInt(item.qty) * productPrice(item, currency);
+			});
+			return totalSum;
+		}
 
-		const handleClick = () => {
-			alert(`Checked out ${activeCurrency + totalSum.toFixed(2)}`);
-			cartCleaner();
-		};
+		if (type === "qty") {
+			cartProducts.forEach((item) => {
+				totalQty += item.qty;
+			});
+			return totalQty;
+		}
+	};
 
+	RemoveProduct = (id) => {
+		const { removeFromCart } = this.props;
+		if (window.confirm("Do you want to remove product?")) {
+			removeFromCart(id);
+		}
+	};
+
+	handleClick = () => {
+		const { currency, cartCleaner } = this.props;
+		alert(`Checked out ${currency + this.getTotal("sum").toFixed(2)}`);
+		cartCleaner();
+	};
+
+	renderAttributes(item) {
+		return (
+			<div className="cart__item--attributes--container">
+				{item.attributes.map((attribute, index1) => {
+					const isColor = attribute.name === "Color";
+					return (
+						<div key={index1} className="cart__item--attrs">
+							<span className="cart__attrName">{attribute.name}:</span>
+							<div className="cart_attributes">
+								{attribute.items.map((attr, index2) => {
+									const isChosen = attr.value === item.chosenAttributes[index1].attrValue;
+									return (
+										<button
+											key={index2}
+											className={`${isChosen ? (isColor ? "selected--swatch" : "selected") : ''} ${
+												isColor ? "btn-32-32" : "btn-63-45 cart__attrValue"
+											}`}
+											style={isColor ? { backgroundColor: `${attr.value}` } : {}}
+										>
+											{isColor ? "" : attr.value}
+										</button>
+									);
+								})}
+							</div>
+						</div>
+					);
+				})}
+			</div>
+		);
+	}
+
+	renderImage(item) {
+		const { addOne, subOne } = this.props;
+		return (
+			<div className="bagCart__item--right">
+				<div className="cart__item--counter">
+					<button onClick={() => addOne(item.id)}>+</button>
+					<span>{item.qty}</span>
+					<button
+						onClick={() => subOne(item.id, item.qty)}
+						className={item.qty < 2 ? "btn__opacity" : ""}
+					>
+						-
+					</button>
+				</div>
+				<Slider images={item.gallery} />
+				<button
+					className="remove__btn remove__btn--top"
+					onClick={() => this.RemoveProduct(item.id)}
+				>
+					x
+				</button>
+			</div>
+		);
+	}
+
+	renderTotalOrder() {
+		const { currency } = this.props;
+		return (
+			<div className="totalOrder">
+				<div className="d-flex">
+					<div className="totalOrder__nums mr-8">
+						<p>Tax 21%: </p>
+						<p>Quantity:</p>
+						<p>Total: </p>
+					</div>
+					<div className="totalOrder__nums">
+						<span className="mb-8">{currency + (this.getTotal("sum") * 0.21).toFixed(2)}</span>
+						<span className="mb-8">{this.getTotal("qty")}</span>
+						<span className="mb-8">
+							{currency}
+							{this.getTotal("sum").toFixed(2)}
+						</span>
+					</div>
+				</div>
+				<button className="cart__btn--checkOut OrderSize" onClick={this.handleClick}>
+					ORDER
+				</button>
+			</div>
+		);
+	}
+
+	renderCartProducts() {
+		const { cartProducts, currency } = this.props;
+		if (cartProducts.length < 1) {
+			return <></>;
+		} else {
+			return (
+				<div>
+					{cartProducts.map((item) => {
+						return (
+							<div key={item.id} className="cart__item--container cart__border">
+								<div className="bagCart__item--left">
+									<span>{item.brand}</span>
+									<span className="cart-item-name">{item.name}</span>
+									<span>
+										{currency}
+										{productPrice(item, currency)}
+									</span>
+									{this.renderAttributes(item)}
+								</div>
+								{this.renderImage(item)}
+							</div>
+						);
+					})}
+					{this.renderTotalOrder()}
+				</div>
+			);
+		}
+	}
+
+	renderCartContent() {
+		const { cartProducts } = this.props;
 		return (
 			<div className="cart__container">
 				<div className="category__name">
 					<span className="cart-name">{cartProducts.length ? "CART" : "CART IS EMPTY"}</span>
+					{this.renderCartProducts()}
 				</div>
-				{cartProducts.length ? (
-					<div>
-						{cartProducts.map((item) => {
-							return (
-								<div key={item.id} className="cart__item--container cart__border">
-									<div className="bagCart__item--left">
-										<span>{item.brand}</span>
-										<span className="cart-item-name">{item.name}</span>
-										<span>
-											{item.prices[0].amount.toFixed(2)}
-											{item.prices[0].currency.symbol}
-										</span>
-										<div className="cart__item--attributes--container">
-											{item.attributes.map((attr, key) => {
-												return (
-													<div key={key} className="cart__item--attrs">
-														<span className="cart__attrName">{attr.attrName}:</span>
-														<button
-															className={` cart__item--attributes--btn 
-                                ${
-																	attr.attrName === "Color"
-																		? "btn-32-32"
-																		: "btn-63-45 cart__attrValue"
-																}
-                              `}
-															style={
-																attr.attrName === "Color"
-																	? { backgroundColor: `${attr.attrValue}` }
-																	: { background: "white" }
-															}
-														>
-															{attr.attrName !== "Color" ? attr.attrValue : ""}
-														</button>
-													</div>
-												);
-											})}
-										</div>
-									</div>
-									<div className="bagCart__item--right">
-										<div className="cart__item--counter">
-											<button onClick={() => addOne(item.id)}>+</button>
-											<span>{item.qty}</span>
-											<button
-												onClick={() => subOne(item.id, item.qty)}
-												className={item.qty < 2 ? "btn__opacity" : ""}
-											>
-												-
-											</button>
-										</div>
-										<Slider images={item.gallery} />
-										<button
-											className="remove__btn remove__btn--top"
-											onClick={() => RemoveProduct(item.id)}
-										>
-											x
-										</button>
-									</div>
-								</div>
-							);
-						})}
-						<div className="totalOrder">
-							<div className="d-flex">
-								<div className="totalOrder__nums mr-8">
-									<p>Tax 21%: </p>
-									<p>Quantity:</p>
-									<p>Total: </p>
-								</div>
-								<div className="totalOrder__nums">
-									<span className="mb-8">{this.props.currency + (totalSum * 0.21).toFixed(2)}</span>
-									<span className="mb-8">{totalQty}</span>
-									<span className="mb-8">
-										{this.props.currency}
-										{totalSum.toFixed(2)}
-									</span>
-								</div>
-							</div>
-							<button className="cart__btn--checkOut OrderSize" onClick={handleClick}>
-								ORDER
-							</button>
-						</div>
-					</div>
-				) : (
-					""
-				)}
 			</div>
 		);
+	}
+
+	render() {
+		return <>{this.renderCartContent()}</>;
 	}
 }
 

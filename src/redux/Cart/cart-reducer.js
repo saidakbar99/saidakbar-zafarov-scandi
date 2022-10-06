@@ -9,6 +9,8 @@ const INITIAL_STATE = {
 	toggleCurrencyDropdown: false,
 	toggleCartDropdown: false,
 	filterAttributes: {},
+	checkboxCancel: false,
+	isPageChanged: false,
 };
 
 const cartReducer = (state = INITIAL_STATE, action) => {
@@ -27,9 +29,7 @@ const cartReducer = (state = INITIAL_STATE, action) => {
 				...state,
 				cart: isDuplicateProduct
 					? state.cart.map((product) => {
-							return product.id === idWithAttrs 
-								? { ...product, qty: product.qty + 1 } 
-								: product;
+							return product.id === idWithAttrs ? { ...product, qty: product.qty + 1 } : product;
 					  })
 					: [
 							...state.cart,
@@ -37,7 +37,7 @@ const cartReducer = (state = INITIAL_STATE, action) => {
 								...addedProduct,
 								qty: 1,
 								id: idWithAttrs,
-								attributes: state.attributes,
+								chosenAttributes: state.attributes,
 							},
 					  ],
 			};
@@ -104,6 +104,16 @@ const cartReducer = (state = INITIAL_STATE, action) => {
 			return {
 				...state,
 				filterAttributes: action.payload,
+			};
+		case actionTypes.CHECKBOX_CANCEL:
+			return {
+				...state,
+				checkboxCancel: action.payload,
+			};
+		case actionTypes.IS_PAGE_CHANGED:
+			return {
+				...state,
+				isPageChanged: action.payload,
 			};
 		default:
 			return state;

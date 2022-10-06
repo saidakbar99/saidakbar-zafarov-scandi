@@ -6,7 +6,7 @@ import { withRouter } from "react-router-dom/cjs/react-router-dom.min";
 import ProductBox from "../components/ProductBox";
 import Sidebar from "../components/Sidebar";
 import { fetchProducts } from "../graphql/queries";
-import { activeProduct, addToCart } from "../redux/Cart/cart-action";
+import { activeProduct, addToCart, checkboxCancel, isPageChanged } from "../redux/Cart/cart-action";
 
 class Home extends React.Component {
 	constructor(props) {
@@ -22,8 +22,13 @@ class Home extends React.Component {
 		const AttrName = Object.keys(filterAttrs);
 		const products = [];
 
-		if (prevProps.filterAttributes[AttrName[0]] !== filterAttrs[AttrName[0]]) {
-			this.props.data.category.products.map((product) => {
+		const isPageChanged = prevProps.isPageChanged !== this.props.isPageChanged;
+		const isFilterChanged = prevProps.filterAttributes[AttrName[0]] !== filterAttrs[AttrName[0]];
+
+		this.props.dispatchIsPageChanged(false);
+
+		if (isFilterChanged || isPageChanged) {
+			this.props.data.category.products.forEach((product) => {
 				product.attributes.forEach((attrs) => {
 					if (attrs.name.toLowerCase() === AttrName[0]) {
 						attrs.items.forEach((item) => {
@@ -38,23 +43,57 @@ class Home extends React.Component {
 			});
 			this.setState({ filteredProducts: products });
 		}
+
+		if (this.props.checkboxCancel) {
+			this.setState({ filteredProducts: [] });
+			this.props.dispatchCheckboxCancel(false);
+		}
 	}
 
-	render() {
+	componentWillUnmount() {
+		this.props.dispatchIsPageChanged(true);
+	}
+
+	renderProducts(products) {
+		const { activeCategory, currency, addToCart, filterAttributes } = this.props;
+		return (
+			<div>
+				<div className="category__name">
+					<span>{activeCategory?.charAt(0)?.toUpperCase() + activeCategory?.slice(1)}</span>
+				</div>
+				<div className="itemsBox__container">
+					{products?.map((item) => {
+						return (
+							<ProductBox
+								key={item.id}
+								item={item}
+								currency={currency}
+								addToCart={addToCart}
+								filterAttributes={filterAttributes}
+							/>
+						);
+					})}
+				</div>
+			</div>
+		);
+	}
+
+	renderHomeContent() {
 		const {
-			data: { loading },
+			activeCategory,
+			history,
+			location,
+			filterAttributes,
+			data: { loading, category },
 		} = this.props;
-		const { addToCart } = this.props;
-		const activeCategory = this.props.activeCategory;
+		const { filteredProducts } = this.state;
+
+		const products =
+			Object.keys(filterAttributes)[0] === "" ? category?.products : filteredProducts;
 
 		const savedCategory = localStorage.getItem("activeCategory")
 			? localStorage.getItem("activeCategory")
-			: this.props.activeCategory;
-
-		const products =
-			Object.keys(this.props.filterAttributes)[0] === ""
-				? this.props.data.category?.products
-				: this.state.filteredProducts;
+			: activeCategory;
 
 		if (loading) {
 			return <></>;
@@ -64,30 +103,17 @@ class Home extends React.Component {
 					<Sidebar
 						products={products}
 						activeCategory={savedCategory}
-						history={this.props.history}
-						location={this.props.location}
+						history={history}
+						location={location}
 					/>
-					<div>
-						<div className="category__name">
-							<span>{activeCategory?.charAt(0)?.toUpperCase() + activeCategory?.slice(1)}</span>
-						</div>
-						<div className="itemsBox__container">
-							{products?.map((item) => {
-								return (
-									<ProductBox
-										key={item.id}
-										item={item}
-										currency={this.props.currency}
-										addToCart={addToCart}
-										filterAttributes={this.props.filterAttributes}
-									/>
-								);
-							})}
-						</div>
-					</div>
+					{this.renderProducts(products)}
 				</div>
 			);
 		}
+	}
+
+	render() {
+		return <>{this.renderHomeContent()}</>;
 	}
 }
 const mapStateToProps = (state) => {
@@ -95,6 +121,8 @@ const mapStateToProps = (state) => {
 		activeCategory: state.cart.activeCategory,
 		currency: state.cart.currency,
 		filterAttributes: state.cart.filterAttributes,
+		checkboxCancel: state.cart.checkboxCancel,
+		isPageChanged: state.cart.isPageChanged,
 	};
 };
 
@@ -102,6 +130,8 @@ const mapDispatchToProps = (dispatch) => {
 	return {
 		addToCart: (id) => dispatch(addToCart(id)),
 		activeProduct: (id) => dispatch(activeProduct(id)),
+		dispatchCheckboxCancel: (bool) => dispatch(checkboxCancel(bool)),
+		dispatchIsPageChanged: (bool) => dispatch(isPageChanged(bool)),
 	};
 };
 

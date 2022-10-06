@@ -13,27 +13,33 @@ class Categories extends React.Component {
 			this.props.dispatchActiveCategory(activeCategory);
 		}
 	}
-	render() {
-		const handleClick = (category) => {
-			this.props.dispatchActiveCategory(category);
-			localStorage.setItem("activeCategory", category);
 
-			const emptyFilters = {};
-			this.props.dispatchFilterAttributes(emptyFilters);
-		};
+	handleClick = (category) => {
+		this.props.dispatchActiveCategory(category);
+		localStorage.setItem("activeCategory", category);
+
+		const emptyFilters = {};
+		this.props.dispatchFilterAttributes(emptyFilters);
+	};
+
+	renderCategoriesContent() {
+		const {
+			activeCategory,
+			data: { categories },
+		} = this.props;
 
 		const savedCategory = localStorage.getItem("activeCategory")
 			? localStorage.getItem("activeCategory")
-			: this.props.activeCategory;
+			: activeCategory;
 
 		return (
 			<div className="menu__container">
-				{this.props.data.categories?.map((category, id) => {
+				{categories?.map((category, id) => {
 					return (
 						<Link to={`/${category.name}`} key={id}>
 							<button
 								className={savedCategory === category.name ? "active" : "menu__button"}
-								onClick={() => handleClick(category.name)}
+								onClick={() => this.handleClick(category.name)}
 							>
 								{category.name.charAt(0).toUpperCase() + category.name.slice(1)}
 							</button>
@@ -42,6 +48,10 @@ class Categories extends React.Component {
 				})}
 			</div>
 		);
+	}
+
+	render() {
+		return <>{this.renderCategoriesContent()}</>;
 	}
 }
 
