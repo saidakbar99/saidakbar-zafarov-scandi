@@ -18,13 +18,9 @@ class Product extends React.Component {
 		};
 	}
 
-	notification = () =>
-		setTimeout(
-			function () {
-				this.setState({ toaster: false });
-			}.bind(this),
-			1000
-		);
+	componentWillUnmount() {
+		clearTimeout(this.notification);
+	}
 
 	componentDidMount() {
 		const {
@@ -61,10 +57,6 @@ class Product extends React.Component {
 		}
 	}
 
-	componentWillUnmount() {
-		clearTimeout(this.notification);
-	}
-
 	toggleImage = (id) => {
 		this.setState({ mainImage: id });
 	};
@@ -78,6 +70,8 @@ class Product extends React.Component {
 	};
 
 	addProduct = () => {
+		clearTimeout(this.notification);
+
 		const {
 			addToCart,
 			data: { product },
@@ -86,7 +80,11 @@ class Product extends React.Component {
 		addToCart(product);
 		this.setState({ toaster: true });
 
-		this.notification();
+		this.notification = setTimeout(() => {
+			this.setState({
+				toaster: false,
+			});
+		}, 1000);
 	};
 
 	renderProductGallery() {

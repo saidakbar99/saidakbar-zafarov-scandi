@@ -11,18 +11,15 @@ class ProductBox extends React.Component {
 		this.state = { toaster: false };
 	}
 
-	notification = () =>
-		setTimeout(
-			function () {
-				this.setState({ toaster: false });
-			}.bind(this),
-			1000
-		);
-
 	addProductFromPlp = (item) => {
 		this.props.addToCart(item);
 		this.setState({ toaster: true });
-		this.notification();
+
+		this.notification = setTimeout(() => {
+			this.setState({
+				toaster: false,
+			});
+		}, 1000);
 	};
 
 	componentWillUnmount() {
