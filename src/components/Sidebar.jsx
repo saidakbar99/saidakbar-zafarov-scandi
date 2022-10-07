@@ -11,6 +11,7 @@ class Sidebar extends React.Component {
 			chosenAttributes: {},
 			urlQuery: "",
 			selectDisabled: false,
+			clearDisabled: true,
 		};
 	}
 
@@ -102,8 +103,16 @@ class Sidebar extends React.Component {
 		);
 	}
 
+	shouldClearDisable() {
+		const { location } = this.props;
+		if (location.search.length) {
+			this.setState({ clearDisabled: false });
+		}
+	}
+
 	componentDidMount() {
 		this.getAllAttributes();
+		this.shouldClearDisable();
 	}
 
 	componentDidUpdate(prevProps) {
@@ -133,7 +142,10 @@ class Sidebar extends React.Component {
 			history.replace(location.pathname);
 		};
 
-		this.setState({ chosenAttributes: emptyFilters, selectDisabled: false }, clearQuery);
+		this.setState(
+			{ chosenAttributes: emptyFilters, selectDisabled: false, clearDisabled: true },
+			clearQuery
+		);
 		dispatchFilterAttributes(emptyFilters);
 	};
 
@@ -168,7 +180,9 @@ class Sidebar extends React.Component {
 		if (type === "checkbox") {
 			if (chosenCopy[name] === "Yes") {
 				delete chosenCopy[name];
-				dispatchCheckboxCancel(true);
+				if (!Object.values(chosenCopy).includes("Yes")) {
+					dispatchCheckboxCancel(true);
+				}
 			} else {
 				chosenCopy[name] = "Yes";
 			}
@@ -178,7 +192,8 @@ class Sidebar extends React.Component {
 		if (type === "select") {
 			this.setState({ selectDisabled: true });
 		}
-		this.setState({ chosenAttributes: chosenCopy }, this.getQuery);
+		this.setState({ chosenAttributes: chosenCopy, clearDisabled: false }, this.getQuery);
+		console.log();
 	};
 
 	renderSelectAttributes(attr) {
@@ -278,12 +293,16 @@ class Sidebar extends React.Component {
 	}
 
 	renderSidebarClearButton() {
-		const { attributes } = this.state;
+		const { attributes, clearDisabled } = this.state;
 		if (attributes.length < 1) {
 			return <></>;
 		} else {
 			return (
-				<button className="filter__clear" onClick={this.clearFilters}>
+				<button
+					className={`filter__clear ${clearDisabled && "clear__disabled"}`}
+					disabled={clearDisabled}
+					onClick={this.clearFilters}
+				>
 					Clear
 				</button>
 			);
@@ -301,7 +320,7 @@ class Sidebar extends React.Component {
 	}
 
 	render() {
-		return <>{this.renderSidebarContent()}</>;
+		return this.renderSidebarContent();
 	}
 }
 

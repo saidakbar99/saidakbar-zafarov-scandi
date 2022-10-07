@@ -26,7 +26,7 @@ class Navbar extends React.Component {
 	}
 
 	render() {
-		return <>{this.renderNavbarContent()}</>;
+		return this.renderNavbarContent();
 	}
 }
 

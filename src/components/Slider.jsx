@@ -61,7 +61,7 @@ class Slider extends React.Component {
 	}
 
 	render() {
-		return <>{this.renderSliderContent()}</>;
+		return this.renderSliderContent();
 	}
 }
 

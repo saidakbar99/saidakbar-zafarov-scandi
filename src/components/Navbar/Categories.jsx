@@ -51,7 +51,7 @@ class Categories extends React.Component {
 	}
 
 	render() {
-		return <>{this.renderCategoriesContent()}</>;
+		return this.renderCategoriesContent();
 	}
 }
 

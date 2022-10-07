@@ -207,7 +207,7 @@ class Product extends React.Component {
 	}
 
 	render() {
-		return <>{this.renderProductContent()}</>;
+		return this.renderProductContent();
 	}
 }
 

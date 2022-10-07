@@ -94,7 +94,7 @@ class NavbarCurrency extends React.Component {
 	}
 
 	render() {
-		return <>{this.renderNavbarCurrencyContent()}</>;
+		return this.renderNavbarCurrencyContent();
 	}
 }
 

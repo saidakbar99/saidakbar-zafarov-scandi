@@ -113,7 +113,7 @@ class Home extends React.Component {
 	}
 
 	render() {
-		return <>{this.renderHomeContent()}</>;
+		return this.renderHomeContent();
 	}
 }
 const mapStateToProps = (state) => {

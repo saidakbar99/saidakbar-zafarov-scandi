@@ -85,7 +85,7 @@ class ProductBox extends React.Component {
 	}
 
 	render() {
-		return <>{this.renderProductBoxContent()}</>;
+		return this.renderProductBoxContent();
 	}
 }
 

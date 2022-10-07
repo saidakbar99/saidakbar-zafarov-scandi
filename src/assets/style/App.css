@@ -837,3 +837,9 @@
 	color: white;
 	background-color: rgb(238, 62, 62);
 }
+
+.clear__disabled:hover {
+	color: rgb(238, 62, 62);
+	background-color: white;
+	opacity: 0.5;
+}

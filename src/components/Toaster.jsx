@@ -18,7 +18,7 @@ class Toaster extends React.Component {
 	}
 
 	render() {
-		return <>{this.renderToasterContent()}</>;
+		return this.renderToasterContent();
 	}
 }
 

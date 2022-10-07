@@ -56,30 +56,36 @@ class Cart extends Component {
 		cartCleaner();
 	};
 
+	renderAttributeValues(item, index, attribute) {
+		return (
+			<div className="cart_attributes">
+				{attribute.items.map((attr, id) => {
+					const isColor = attribute.name === "Color";
+					const isChosen = attr.value === item.chosenAttributes[index].attrValue;
+					return (
+						<button
+							key={id}
+							className={`${isChosen ? (isColor ? "selected--swatch" : "selected") : ""} ${
+								isColor ? "btn-32-32" : "btn-63-45 cart__attrValue"
+							}`}
+							style={isColor ? { backgroundColor: `${attr.value}` } : {}}
+						>
+							{isColor ? "" : attr.value}
+						</button>
+					);
+				})}
+			</div>
+		);
+	}
+
 	renderAttributes(item) {
 		return (
 			<div className="cart__item--attributes--container">
-				{item.attributes.map((attribute, index1) => {
-					const isColor = attribute.name === "Color";
+				{item.attributes.map((attribute, index) => {
 					return (
-						<div key={index1} className="cart__item--attrs">
+						<div key={index} className="cart__item--attrs">
 							<span className="cart__attrName">{attribute.name}:</span>
-							<div className="cart_attributes">
-								{attribute.items.map((attr, index2) => {
-									const isChosen = attr.value === item.chosenAttributes[index1].attrValue;
-									return (
-										<button
-											key={index2}
-											className={`${isChosen ? (isColor ? "selected--swatch" : "selected") : ''} ${
-												isColor ? "btn-32-32" : "btn-63-45 cart__attrValue"
-											}`}
-											style={isColor ? { backgroundColor: `${attr.value}` } : {}}
-										>
-											{isColor ? "" : attr.value}
-										</button>
-									);
-								})}
-							</div>
+							{this.renderAttributeValues(item, index, attribute)}
 						</div>
 					);
 				})}
@@ -180,7 +186,7 @@ class Cart extends Component {
 	}
 
 	render() {
-		return <>{this.renderCartContent()}</>;
+		return this.renderCartContent();
 	}
 }
 

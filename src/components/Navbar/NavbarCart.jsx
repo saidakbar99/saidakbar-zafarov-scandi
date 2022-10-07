@@ -234,7 +234,7 @@ class NavbarCart extends React.Component {
 	}
 
 	render() {
-		return <>{this.renderCartContent()}</>;
+		return this.renderCartContent();
 	}
 }
 
