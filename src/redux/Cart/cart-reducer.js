@@ -11,6 +11,7 @@ const INITIAL_STATE = {
 	filterAttributes: {},
 	checkboxCancel: false,
 	isPageChanged: false,
+	warningToaster: false,
 };
 
 const cartReducer = (state = INITIAL_STATE, action) => {
@@ -82,7 +83,7 @@ const cartReducer = (state = INITIAL_STATE, action) => {
 				)
 					? [...state.attributes, action.payload]
 					: state.attributes.map((attr) => {
-						if (attr.attrName === action.payload.attrName) {
+							if (attr.attrName === action.payload.attrName) {
 								return action.payload;
 							} else {
 								return attr;
@@ -121,6 +122,11 @@ const cartReducer = (state = INITIAL_STATE, action) => {
 			return {
 				...state,
 				isPageChanged: action.payload,
+			};
+		case actionTypes.WARNING_TOASTER:
+			return {
+				...state,
+				warningToaster: action.payload,
 			};
 		default:
 			return state;

@@ -1,4 +1,4 @@
-import * as actionTypes from "./cart-types";
+import * as actionTypes from './cart-types';
 
 export const addToCart = (product) => {
 	return {
@@ -106,6 +106,13 @@ export const checkboxCancel = (bool) => {
 export const isPageChanged = (bool) => {
 	return {
 		type: actionTypes.IS_PAGE_CHANGED,
+		payload: bool,
+	};
+};
+
+export const warningToaster = (bool) => {
+	return {
+		type: actionTypes.WARNING_TOASTER,
 		payload: bool,
 	};
 };

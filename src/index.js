@@ -10,7 +10,7 @@ import App from "./App";
 import "./assets/style/global.css";
 import "./assets/style/Scrolls.css";
 import "./assets/style/App.css";
-import "./assets/style/Toaster.css";
+import "./assets/style/Toasters.css";
 
 const client = new ApolloClient({
 	uri: "http://localhost:4000",

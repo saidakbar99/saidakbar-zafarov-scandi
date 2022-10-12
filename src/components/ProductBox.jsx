@@ -6,15 +6,18 @@ import {
 	attributeSelector,
 	addToCart,
 	attributeCleaner,
+	warningToaster,
 } from '../redux/Cart/cart-action';
 import { productPrice } from '../helpers/utils';
 import buyBtn from '../assets/images/buy-btn.svg';
-import Toaster from './Toaster';
+import ToasterSuccess from './Toasters/SuccessToaster';
 
 class ProductBox extends React.Component {
 	constructor(props) {
 		super(props);
-		this.state = { toaster: false };
+		this.state = {
+			toasterSuccess: false,
+		};
 	}
 
 	addProductFromPlp = (item) => {
@@ -29,11 +32,11 @@ class ProductBox extends React.Component {
 		this.props.addToCart(item);
 		this.props.attributeCleaner();
 
-		this.setState({ toaster: true }, () => {});
+		this.setState({ toasterSuccess: true });
 
 		this.notification = setTimeout(() => {
 			this.setState({
-				toaster: false,
+				toasterSuccess: false,
 			});
 		}, 1000);
 	};
@@ -75,13 +78,15 @@ class ProductBox extends React.Component {
 		);
 
 		if (isSwatch) {
+			const { warningToaster } = this.props;
 			return (
 				<Link to={`/product/${item.id}`}>
-					<button
-						className="buyBtn"
-						onClick={() => alert('Choose attributes.')}
-					>
-						<img src={buyBtn} alt="buyBtn" />
+					<button className="buyBtn">
+						<img
+							src={buyBtn}
+							alt="buyBtn"
+							onClick={() => warningToaster(true)}
+						/>
 					</button>
 				</Link>
 			);
@@ -96,7 +101,7 @@ class ProductBox extends React.Component {
 
 	renderProductBoxContent() {
 		const { item } = this.props;
-		const { toaster } = this.state;
+		const { toasterSuccess } = this.state;
 		const isOutOfStock = item.inStock ? 'items__container' : 'outOfStock';
 		return (
 			<>
@@ -104,7 +109,7 @@ class ProductBox extends React.Component {
 					{this.renderProduct()}
 					{this.renderBuyButton()}
 				</div>
-				<Toaster show={toaster} />
+				<ToasterSuccess show={toasterSuccess} />
 			</>
 		);
 	}
@@ -119,6 +124,7 @@ const mapDispatchToProps = (dispatch) => {
 		attributeSelector: (obj) => dispatch(attributeSelector(obj)),
 		addToCart: (id) => dispatch(addToCart(id)),
 		attributeCleaner: () => dispatch(attributeCleaner()),
+		warningToaster: (bool) => dispatch(warningToaster(bool)),
 	};
 };
 

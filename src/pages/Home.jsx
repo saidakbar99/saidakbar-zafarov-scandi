@@ -1,12 +1,16 @@
-import React from "react";
-import { connect } from "react-redux";
-import { graphql } from "@apollo/client/react/hoc";
-import { withRouter } from "react-router-dom/cjs/react-router-dom.min";
+import React from 'react';
+import { connect } from 'react-redux';
+import { graphql } from '@apollo/client/react/hoc';
+import { withRouter } from 'react-router-dom/cjs/react-router-dom.min';
 
-import ProductBox from "../components/ProductBox";
-import Sidebar from "../components/Sidebar";
-import { fetchProducts } from "../graphql/queries";
-import { activeProduct, checkboxCancel, isPageChanged } from "../redux/Cart/cart-action";
+import ProductBox from '../components/ProductBox';
+import Sidebar from '../components/Sidebar';
+import { fetchProducts } from '../graphql/queries';
+import {
+	activeProduct,
+	checkboxCancel,
+	isPageChanged,
+} from '../redux/Cart/cart-action';
 
 class Home extends React.Component {
 	constructor(props) {
@@ -23,7 +27,8 @@ class Home extends React.Component {
 		const products = [];
 
 		const isPageChanged = prevProps.isPageChanged !== this.props.isPageChanged;
-		const isFilterChanged = prevProps.filterAttributes[AttrName[0]] !== filterAttrs[AttrName[0]];
+		const isFilterChanged =
+			prevProps.filterAttributes[AttrName[0]] !== filterAttrs[AttrName[0]];
 
 		this.props.dispatchIsPageChanged(false);
 
@@ -32,10 +37,12 @@ class Home extends React.Component {
 				product.attributes.forEach((attrs) => {
 					if (attrs.name.toLowerCase() === AttrName[0]) {
 						attrs.items.forEach((item) => {
-							if (attrs.name === "Color") {
-								item.displayValue === filterAttrs[AttrName[0]] && products.push(product);
+							if (attrs.name === 'Color') {
+								item.displayValue === filterAttrs[AttrName[0]] &&
+									products.push(product);
 							} else {
-								item.value === filterAttrs[AttrName[0]] && products.push(product);
+								item.value === filterAttrs[AttrName[0]] &&
+									products.push(product);
 							}
 						});
 					}
@@ -59,7 +66,10 @@ class Home extends React.Component {
 		return (
 			<div>
 				<div className="category__name">
-					<span>{activeCategory?.charAt(0)?.toUpperCase() + activeCategory?.slice(1)}</span>
+					<span>
+						{activeCategory?.charAt(0)?.toUpperCase() +
+							activeCategory?.slice(1)}
+					</span>
 				</div>
 				<div className="itemsBox__container">
 					{products?.map((item) => {
@@ -88,10 +98,12 @@ class Home extends React.Component {
 		const { filteredProducts } = this.state;
 
 		const products =
-			Object.keys(filterAttributes)[0] === "" ? category?.products : filteredProducts;
+			Object.keys(filterAttributes)[0] === ''
+				? category?.products
+				: filteredProducts;
 
-		const savedCategory = localStorage.getItem("activeCategory")
-			? localStorage.getItem("activeCategory")
+		const savedCategory = localStorage.getItem('activeCategory')
+			? localStorage.getItem('activeCategory')
 			: activeCategory;
 
 		if (loading) {
@@ -127,7 +139,6 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
 	return {
-		
 		activeProduct: (id) => dispatch(activeProduct(id)),
 		dispatchCheckboxCancel: (bool) => dispatch(checkboxCancel(bool)),
 		dispatchIsPageChanged: (bool) => dispatch(isPageChanged(bool)),
@@ -141,7 +152,7 @@ export default connect(
 	withRouter(
 		graphql(fetchProducts, {
 			options: (props) => ({
-				variables: { title: props.location.pathname.slice(1) ?? "all" },
+				variables: { title: props.location.pathname.slice(1) ?? 'all' },
 			}),
 		})(Home)
 	)
