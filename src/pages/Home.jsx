@@ -6,7 +6,7 @@ import { withRouter } from "react-router-dom/cjs/react-router-dom.min";
 import ProductBox from "../components/ProductBox";
 import Sidebar from "../components/Sidebar";
 import { fetchProducts } from "../graphql/queries";
-import { activeProduct, addToCart, checkboxCancel, isPageChanged } from "../redux/Cart/cart-action";
+import { activeProduct, checkboxCancel, isPageChanged } from "../redux/Cart/cart-action";
 
 class Home extends React.Component {
 	constructor(props) {
@@ -55,7 +55,7 @@ class Home extends React.Component {
 	}
 
 	renderProducts(products) {
-		const { activeCategory, currency, addToCart, filterAttributes } = this.props;
+		const { activeCategory, currency, filterAttributes } = this.props;
 		return (
 			<div>
 				<div className="category__name">
@@ -68,7 +68,6 @@ class Home extends React.Component {
 								key={item.id}
 								item={item}
 								currency={currency}
-								addToCart={addToCart}
 								filterAttributes={filterAttributes}
 							/>
 						);
@@ -128,7 +127,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
 	return {
-		addToCart: (id) => dispatch(addToCart(id)),
+		
 		activeProduct: (id) => dispatch(activeProduct(id)),
 		dispatchCheckboxCancel: (bool) => dispatch(checkboxCancel(bool)),
 		dispatchIsPageChanged: (bool) => dispatch(isPageChanged(bool)),

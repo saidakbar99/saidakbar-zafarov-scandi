@@ -49,10 +49,13 @@ class Product extends React.Component {
 
 		if (loading !== prevProps.data.loading) {
 			product.attributes.forEach((attr) => {
-				attributeSelector({
-					attrName: attr.name,
-					attrValue: attr.items[0].value,
-				});
+				console.log(attr.name)
+				if(attr.name !== 'Color'){
+					attributeSelector({
+						attrName: attr.name,
+						attrValue: attr.items[0].value,
+					});
+				}
 			});
 		}
 	}
@@ -74,17 +77,21 @@ class Product extends React.Component {
 
 		const {
 			addToCart,
+			attributes,
 			data: { product },
 		} = this.props;
 
-		addToCart(product);
-		this.setState({ toaster: true });
-
-		this.notification = setTimeout(() => {
-			this.setState({
-				toaster: false,
-			});
-		}, 1000);
+		if(attributes.length === product.attributes.length){
+			addToCart(product);
+			this.setState({ toaster: true });
+			this.notification = setTimeout(() => {
+				this.setState({
+					toaster: false,
+				});
+			}, 1000);
+		}else{
+			alert('Choose all attributes.')
+		}
 	};
 
 	renderProductGallery() {
@@ -175,7 +182,7 @@ class Product extends React.Component {
 				<span>PRICE:</span>
 				<span className="fz-24">{currency + productPrice(product, currency)}</span>
 				<button
-					onClick={inStock && this.addProduct}
+					onClick={inStock ? this.addProduct : undefined}
 					id={inStock ? "add__btn" : "add__btn--outOfStock"}
 				>
 					{inStock ? "ADD TO CART" : "OUT OF STOCK"}

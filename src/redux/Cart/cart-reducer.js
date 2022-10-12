@@ -1,11 +1,11 @@
-import * as actionTypes from "./cart-types";
+import * as actionTypes from './cart-types';
 
 const INITIAL_STATE = {
 	cart: [],
-	currency: "$",
+	currency: '$',
 	attributes: [],
-	activeProduct: "",
-	activeCategory: "all",
+	activeProduct: '',
+	activeCategory: 'all',
 	toggleCurrencyDropdown: false,
 	toggleCartDropdown: false,
 	filterAttributes: {},
@@ -19,17 +19,20 @@ const cartReducer = (state = INITIAL_STATE, action) => {
 			const idFromAttrs = state.attributes.map((attr) => {
 				return Object.values(attr)[1];
 			});
-			const idWithAttrs = action.payload.id + "-" + idFromAttrs.join("-");
+			const idWithAttrs = action.payload.id + '-' + idFromAttrs.join('-');
 			const addedProduct = action.payload;
 
 			const isDuplicateProduct = state.cart.find((product) =>
 				product.id === idWithAttrs ? true : false
 			);
+
 			return {
 				...state,
 				cart: isDuplicateProduct
 					? state.cart.map((product) => {
-							return product.id === idWithAttrs ? { ...product, qty: product.qty + 1 } : product;
+							return product.id === idWithAttrs
+								? { ...product, qty: product.qty + 1 }
+								: product;
 					  })
 					: [
 							...state.cart,
@@ -74,10 +77,12 @@ const cartReducer = (state = INITIAL_STATE, action) => {
 		case actionTypes.ATTRIBUTE_SELECTOR:
 			return {
 				...state,
-				attributes: !state.attributes.find((prod) => prod.attrName === action.payload.attrName)
+				attributes: !state.attributes.find(
+					(prod) => prod.attrName === action.payload.attrName
+				)
 					? [...state.attributes, action.payload]
 					: state.attributes.map((attr) => {
-							if (attr.attrName === action.payload.attrName) {
+						if (attr.attrName === action.payload.attrName) {
 								return action.payload;
 							} else {
 								return attr;
@@ -93,7 +98,9 @@ const cartReducer = (state = INITIAL_STATE, action) => {
 		case actionTypes.TOGGLE_CURRENCY_DROPDOWN:
 			return {
 				...state,
-				toggleCurrencyDropdown: action.payload ? !state.toggleCurrencyDropdown : false,
+				toggleCurrencyDropdown: action.payload
+					? !state.toggleCurrencyDropdown
+					: false,
 			};
 		case actionTypes.TOGGLE_CART_DROPDOWN:
 			return {

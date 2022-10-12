@@ -1,9 +1,15 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
 
-import buyBtn from "../assets/images/buy-btn.svg";
-import { productPrice } from "../helpers/utils";
-import Toaster from "./Toaster";
+import {
+	attributeSelector,
+	addToCart,
+	attributeCleaner,
+} from '../redux/Cart/cart-action';
+import { productPrice } from '../helpers/utils';
+import buyBtn from '../assets/images/buy-btn.svg';
+import Toaster from './Toaster';
 
 class ProductBox extends React.Component {
 	constructor(props) {
@@ -12,8 +18,18 @@ class ProductBox extends React.Component {
 	}
 
 	addProductFromPlp = (item) => {
+		const { attributeSelector } = this.props;
+
+		item.attributes.forEach((attr) => {
+			attributeSelector({
+				attrName: attr.name,
+				attrValue: attr.items[0].value,
+			});
+		});
 		this.props.addToCart(item);
-		this.setState({ toaster: true });
+		this.props.attributeCleaner();
+
+		this.setState({ toaster: true }, () => {});
 
 		this.notification = setTimeout(() => {
 			this.setState({
@@ -31,12 +47,14 @@ class ProductBox extends React.Component {
 		return (
 			<Link to={`/product/${item.id}`}>
 				<div className="items" id="p-relative">
-					<img
-						className={item.inStock ? "" : "outOfStock__img"}
-						src={item.gallery[0]}
-						alt={item.id}
-					/>
-					<div className={item.inStock ? "inStock" : "outOfStock__text"}>
+					<div className="items__img--container">
+						<img
+							className={`items__img ${!item.inStock && 'outOfStock__img'}`}
+							src={item.gallery[0]}
+							alt={item.id}
+						/>
+					</div>
+					<div className={item.inStock ? 'inStock' : 'outOfStock__text'}>
 						<p>OUT OF STOCK</p>
 					</div>
 					<div className="item__brand">
@@ -52,27 +70,34 @@ class ProductBox extends React.Component {
 
 	renderBuyButton() {
 		const { item } = this.props;
-		return (
-			<>
-				{item.attributes.length ? (
-					<Link to={`/product/${item.id}`}>
-						<button className="buyBtn" onClick={() => alert("Choose attributes.")}>
-							<img src={buyBtn} alt="buyBtn" />
-						</button>
-					</Link>
-				) : (
-					<button className="buyBtn" onClick={() => this.addProductFromPlp(item)}>
+		const isSwatch = item.attributes.find(
+			(attribute) => attribute.name === 'Color'
+		);
+
+		if (isSwatch) {
+			return (
+				<Link to={`/product/${item.id}`}>
+					<button
+						className="buyBtn"
+						onClick={() => alert('Choose attributes.')}
+					>
 						<img src={buyBtn} alt="buyBtn" />
 					</button>
-				)}
-			</>
-		);
+				</Link>
+			);
+		} else {
+			return (
+				<button className="buyBtn" onClick={() => this.addProductFromPlp(item)}>
+					<img src={buyBtn} alt="buyBtn" />
+				</button>
+			);
+		}
 	}
 
 	renderProductBoxContent() {
 		const { item } = this.props;
 		const { toaster } = this.state;
-		const isOutOfStock = item.inStock ? "items__container" : "outOfStock";
+		const isOutOfStock = item.inStock ? 'items__container' : 'outOfStock';
 		return (
 			<>
 				<div className={isOutOfStock}>
@@ -89,4 +114,12 @@ class ProductBox extends React.Component {
 	}
 }
 
-export default ProductBox;
+const mapDispatchToProps = (dispatch) => {
+	return {
+		attributeSelector: (obj) => dispatch(attributeSelector(obj)),
+		addToCart: (id) => dispatch(addToCart(id)),
+		attributeCleaner: () => dispatch(attributeCleaner()),
+	};
+};
+
+export default connect(null, mapDispatchToProps)(ProductBox);

@@ -9,6 +9,7 @@
 	color: white;
 	pointer-events: none;
 	transition: 0.5s;
+	z-index: 100;
 }
 
 .notification-image {
